@@ -62,7 +62,7 @@ function App() {
 
   useEffect(() => {
     fetchWeather(city);
-  }, [city]);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
