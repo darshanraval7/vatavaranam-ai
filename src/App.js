@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Sun, Cloud, CloudRain, Wind, Droplets, Thermometer, CloudLightning, CloudSnow, Disc, Sliders, Radio, Compass, Gauge, Activity, Eye, Sunrise, Sunset, Calendar, Briefcase, TramFront, Sprout } from 'lucide-react';
+import { Search, Sun, Cloud, CloudRain, Wind, Droplets, Thermometer, CloudLightning, CloudSnow, Disc, Radio, Compass, Gauge, Activity, Eye, Sunrise, Sunset, Calendar, Briefcase, TramFront, Sprout } from 'lucide-react';
 import './App.css';
 
 const API_KEY = "1d30e0668b384c4d133dc45fe617b03b"; 
@@ -62,7 +62,7 @@ function App() {
 
   useEffect(() => {
     fetchWeather(city);
-  }, []);
+  }, [city]);
 
   const handleSearch = (e) => {
     e.preventDefault();
