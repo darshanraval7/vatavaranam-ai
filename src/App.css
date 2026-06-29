@@ -334,3 +334,126 @@ body {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ================= COMPLETE MOBILE MOBILE RESPONSIVE UPGRADE (768px) ================= */
+@media (max-width: 768px) {
+  /* ૧. આખા પેજનું પેડિંગ ઓછું કરવું જેથી ગ્લાસ ઇફેક્ટ કાર્ડ પ્રોપર દેખાય */
+  .full-page-studio {
+    padding: 16px 12px;
+  }
+  
+  .widescreen-dashboard-frame {
+    padding: 20px 16px;
+    gap: 20px;
+    border-radius: 20px;
+  }
+
+  /* ૨. ટોપ નેવિગેશન ફિક્સ - મોબાઇલ માટે ફ્લેક્સ ડિરેક્શન સેન્ટર */
+  .widescreen-top-nav {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: 16px;
+  }
+  
+  .nav-brand {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .nav-center-search {
+    width: 100%; /* ઇનપુટ બોક્સ મોબાઇલ સ્ક્રીન સાઈઝ પ્રમાણે સેટ થશે */
+    max-width: 100%;
+  }
+  
+  .live-pill {
+    margin-top: 4px;
+  }
+
+  /* ૩. મેઇન વર્કસ્પેસ ગ્રીડ અપડેટ */
+  .widescreen-workspace-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+  }
+
+  /* ૪. કરંટ વેધર બેનર કમ્પેક્ટ લુક */
+  .current-track-banner {
+    padding: 18px;
+    gap: 16px;
+  }
+  
+  .track-album-art {
+    width: 65px;
+    height: 65px;
+  }
+  
+  .track-title {
+    font-size: 24px;
+  }
+  
+  .track-metric-value h2 {
+    font-size: 30px;
+  }
+
+  /* ૫. મિક્સર એનાલિટિક્સ ડેશબોર્ડ - મોબાઇલ સ્ક્રીન પર ૨ કાર્ડ્સ લાઈનમાં સેટ કરવા */
+  .mixer-analytics-dashboard {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; /* સિંગલ કોલમની જગ્યાએ ૨ કોલમ */
+    gap: 12px !important;
+  }
+
+  .mixer-channel-node {
+    padding: 12px 14px;
+    border-radius: 14px;
+  }
+  
+  .channel-value-row h3 {
+    font-size: 15px;
+  }
+  
+  .channel-label {
+    font-size: 9px;
+  }
+
+  /* ૬. કૅલેન્ડર ગ્રીડ વાઇબ */
+  .calendar-grid-vibe {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px;
+  }
+
+  /* ૭. બોટમ ફૂટર ટેબ્સ - સુંદર અને અંગૂઠાથી ઓપરેટ થઈ શકે તેવી ગ્રીડ (image_cc0d5b.png ફિક્સ) */
+  .widescreen-bottom-tabs-bar {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; /* ૨-૨ બટન્સ એક લાઈનમાં */
+    gap: 10px !important;
+    padding-top: 16px;
+  }
+
+  /* ૫ મું બટન (જે એકલું વધશે) એને સેન્ટરમાં આખી લાઈન રોકવા માટે */
+  .widescreen-bottom-tabs-bar button:nth-child(5) {
+    grid-column: span 2;
+    width: 100%;
+  }
+
+  .footer-tab-btn {
+    padding: 12px 10px;
+    font-size: 11px;
+    border-radius: 12px;
+    justify-content: flex-start; /* ટેક્સ્ટ ડાબી બાજુ સરસ ગોઠવાશે */
+    height: 48px;
+  }
+  
+  /* AI Studio ગ્રીડ પણ સિંગલ કોલમ થઈ જશે */
+  .ai-studio-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+}
+
+/* મિડિયમ સ્ક્રીન ટેબ્લેટ્સ (950px) માટેનું જૂનું લોજિક સેફ રાખ્યું છે */
+@media (max-width: 950px) and (min-width: 769px) {
+  .widescreen-workspace-grid { 
+    grid-template-columns: 1fr; 
+  }
+}

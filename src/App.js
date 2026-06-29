@@ -66,9 +66,12 @@ function App() {
       setForecastData(dailyData);
       
     } catch (err) {
-      console.log('Station frequency offline. Try again.');
+      if (!navigator.onLine) {
+        alert("You are offline, you will see last saved data.");
+      } else {
+        console.log('Station frequency offline. Try again.');
+      }
     } finally {
-      // લૉફાઇ ક્લાઉડ લોડર સરસ રીતે દેખાય એટલે સેકન્ડનો હોલ્ડ
       setTimeout(() => setLoading(false), 1200);
     }
   };
