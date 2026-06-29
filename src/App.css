@@ -328,3 +328,9 @@ body {
   80% { opacity: 0.8; }
   100% { transform: translateY(22px) scaleY(0.8); opacity: 0; }
 }
+
+@media (max-width: 768px) {
+  .ai-studio-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -28,10 +28,22 @@ function App() {
   const fetchWeather = async (searchCity) => {
     setLoading(true);
     try {
-      const currentRes = await axios.get(
-        `https://api.openweathermap.org/data/2.5/weather?q=${searchCity}&units=metric&appid=${API_KEY}`
-      );
-      setWeatherData(currentRes.data);
+
+      // જો ઇનપુટ નંબર (પિનકોડ) હોય તો zip API વાપરવી, નહીંતર q (નામ) API
+      const isPincode = !isNaN(searchCity.trim());
+
+      const url = isPincode 
+        ? `https://api.openweathermap.org/data/2.5/weather?zip=${searchCity.trim()},IN&units=metric&appid=${API_KEY}`
+        : `https://api.openweathermap.org/data/2.5/weather?q=${searchCity}&units=metric&appid=${API_KEY}`;
+
+      const currentRes = await axios.get(url);
+
+      const aiMetrics = generateAIFeatures(currentRes.data);
+
+      setWeatherData({ ...currentRes.data, ai: aiMetrics });
+
+      // Recent Searches માં સિટી એડ કરવાની ટ્રિક
+      saveToRecent(currentRes.data.name);
 
       const mainState = currentRes.data.weather[0].main;
       if (mainState === 'Clear') setWeatherVibe('vibe-clear');
@@ -58,6 +70,15 @@ function App() {
     } finally {
       // લૉફાઇ ક્લાઉડ લોડર સરસ રીતે દેખાય એટલે સેકન્ડનો હોલ્ડ
       setTimeout(() => setLoading(false), 1200);
+    }
+  };
+
+  // ૩. LocalStorage માં રીસેન્ટ સર્ચ સેવ કરવા માટે
+  const saveToRecent = (cityName) => {
+    let recent = JSON.parse(localStorage.getItem('recent_stations')) || [];
+    if (!recent.includes(cityName)) {
+      recent = [cityName, ...recent].slice(0, 4); // ફક્ત છેલ્લા ૪ સર્ચ રાખશે
+      localStorage.setItem('recent_stations', JSON.stringify(recent));
     }
   };
 
@@ -125,6 +146,66 @@ function App() {
     return { text: 'વાતાવરણ અનુકૂળ છે, ઇવેન્ટ પ્લાન રેડી કરી શકો છો.', color: '#10b981' };
   };
 
+  const generateAIFeatures = (data) => {
+    if (!data) return null;
+
+    const temp = Math.round(data.main.temp);
+    const condition = data.weather[0].main;
+    const humidity = data.main.humidity;
+    const wind = data.wind.speed;
+    const isRain = ['Rain', 'Drizzle', 'Thunderstorm'].includes(condition);
+
+    // ૧. AI Weather Summary
+    let summary = `Currently ${temp}°C with ${data.weather[0].description}. `;
+    if (isRain) summary += "Expect light showers to continue; perfect track for lofi beats.";
+    else if (temp > 32) summary += "Warm atmospheric frequencies detected. Stay hydrated inside the studio.";
+    else summary += "Clear soundstage vibes outside. Great day to explore.";
+
+    // ૨. AI Travel & Outfit Recommendations
+    const travel = isRain ? "Not recommended for long drives or hill stations. Local cafes are a better vibe." : "High feasibility for commuting or short inter-city travel.";
+    const outfit = temp > 30 ? "Light linen, oversized tees, and shades." : isRain ? "Waterproof windcheater, dark cargos, and extra layers." : "Comfortable cotton layers or a light studio jacket.";
+
+    // ૩. AI Health & Farming Advice
+    const health = humidity > 80 ? "High moisture levels. Drink clean water and maintain indoor ventilation." : "Perfect environment. Good for breathing and quick outdoor cardio.";
+    const farming = isRain ? "Excellent natural irrigation track active. Postpone heavy pesticide spraying." : temp > 35 ? "High evaporation rates. Schedule root-level watering early morning." : "Optimal soil moisture state. Safe time for fertilizer inputs.";
+
+    // ૪. AI Workout & Lifestyle Scores (Calculated Matrices)
+    const picnicScore = isRain ? 20 : temp > 35 ? 45 : Math.max(100 - (wind * 3), 75);
+    const beachScore = isRain || wind > 12 ? 15 : temp < 22 ? 50 : Math.min(100 - (humidity / 2), 95);
+    const drivingScore = isRain ? 55 : wind > 15 ? 70 : 98;
+    const workout = isRain || temp > 35 ? "Indoor Gym / Core Stability Session recommended." : "Outdoor Running Spectrum / Cycling tracks are perfect right now.";
+
+    return {
+      summary, travel, outfit, health, farming, workout,
+      picnicScore, beachScore, drivingScore
+    };
+  };
+
+  // ૧. GPS લોકેશન મેળવવાનું નવું ફંક્શન
+  const fetchWeatherByGPS = () => {
+    if (navigator.geolocation) {
+      setLoading(true);
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const res = await axios.get(
+            `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${API_KEY}`
+          );
+          setWeatherData(res.data);
+          setCity(res.data.name);
+          // બાકીનું ફોરકાસ્ટ લોજિક અહીં એડ કરવું...
+        } catch (err) {
+          console.log("GPS station offline.");
+        } finally {
+          setTimeout(() => setLoading(false), 1200);
+        }
+      }, () => {
+        alert("લોકેશન પરમિશન ડિનાઇડ!");
+        setLoading(false);
+      });
+    }
+  };
+
   const hottestCity = [...leaderboard].sort((a, b) => b.temp - a.temp)[0];
   const coldestCity = [...leaderboard].sort((a, b) => a.temp - b.temp)[0];
   const rainiestCity = leaderboard.find(c => ['Rain', 'Thunderstorm'].includes(c.condition)) || [...leaderboard].sort((a, b) => b.humidity - a.humidity)[0];
@@ -167,10 +248,18 @@ function App() {
             <div className="nav-brand">
               <Disc className="vinyl-animation text-cyan" size={22} />
               <h2>Vatavaranam<span>.ai</span></h2>
+                <img 
+                  src={`https://flagsapi.com/IN/flat/24.png`} 
+                  alt="Country Flag" 
+                  style={{ marginLeft: '8px' }}
+                />
             </div>
             
             <form onSubmit={handleSearch} className="nav-center-search">
-              <input type="text" placeholder="Search station city..." value={city} onChange={(e) => setCity(e.target.value)} />
+              <input type="text" placeholder="Search city or Pincode..." value={city} onChange={(e) => setCity(e.target.value)} />
+              {/* લોકેશન ટ્રેક કરવા માટેનું નવું GPS બટન */}
+              <button type="button" onClick={fetchWeatherByGPS} style={{ paddingRight: '10px' }}>📍</button>
+              
               <button type="submit"><Search size={14} /></button>
             </form>
 
@@ -316,11 +405,70 @@ function App() {
                 </div>
               </div>
             )}
+
+            {activeTab === 'aistudio' && weatherData?.ai && (
+              <div className="ai-studio-grid animate-render" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                
+                {/* LEFT SIDE: AI SUMMARIES */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <div className="planner-view-card" style={{ borderLeft: '4px solid #a855f7' }}>
+                    <h4 style={{ color: '#a855f7', fontSize: '11px', letterSpacing: '1px' }}>✨ AI ATMOSPHERIC SUMMARY</h4>
+                    <p style={{ fontSize: '13px', marginTop: '6px', fontWeight: '600', color: '#1e293b' }}>"{weatherData.ai.summary}"</p>
+                  </div>
+
+                  <div className="planner-view-card">
+                    <h5 style={{ fontSize: '11px', color: '#0891b2' }}>✈️ AI Travel Recommendation</h5>
+                    <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>{weatherData.ai.travel}</p>
+                  </div>
+
+                  <div className="planner-view-card">
+                    <h5 style={{ fontSize: '11px', color: '#14b8a6' }}>👕 AI Outfit Suggestion</h5>
+                    <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>{weatherData.ai.outfit}</p>
+                  </div>
+
+                  <div className="planner-view-card">
+                    <h5 style={{ fontSize: '11px', color: '#ef4444' }}>🩺 AI Health & Workout</h5>
+                    <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}><strong>Status:</strong> {weatherData.ai.health} <br/><strong>Routine:</strong> {weatherData.ai.workout}</p>
+                  </div>
+
+                  <div className="planner-view-card">
+                    <h5 style={{ fontSize: '11px', color: '#f59e0b' }}>🌾 AI Farming Advice</h5>
+                    <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>{weatherData.ai.farming}</p>
+                  </div>
+                </div>
+
+                {/* RIGHT SIDE: AI SPECTRAL SCORES (FADERS) */}
+                <div className="mixer-analytics-dashboard" style={{ display: 'flex', flexDirection: 'column', gap: '15px', background: '#fff', padding: '20px', borderRadius: '18px' }}>
+                  <h4 style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a' }}>📊 LIVE LIFESTYLE SPECTROGRAM</h4>
+                  
+                  <div className="mixer-channel-node" style={{ padding: '5px 0' }}>
+                    <span className="channel-label">🧺 PICNIC SCORE MATRIX</span>
+                    <div className="channel-value-row"><h3>{weatherData.ai.picnicScore}%</h3></div>
+                    <div className="fader-track-bg"><div className="fader-fill-bar bar-cyan" style={{ width: `${weatherData.ai.picnicScore}%` }}></div></div>
+                  </div>
+
+                  <div className="mixer-channel-node" style={{ padding: '5px 0' }}>
+                    <span className="channel-label">🏖️ BEACH VIBE RATIO</span>
+                    <div className="channel-value-row"><h3>{weatherData.ai.beachScore}%</h3></div>
+                    <div className="fader-track-bg"><div className="fader-fill-bar bar-purple" style={{ width: `${weatherData.ai.beachScore}%` }}></div></div>
+                  </div>
+
+                  <div className="mixer-channel-node" style={{ padding: '5px 0' }}>
+                    <span className="channel-label">🚗 DRIVING SAFETY COEFFICIENT</span>
+                    <div className="channel-value-row"><h3>{weatherData.ai.drivingScore}%</h3></div>
+                    <div className="fader-track-bg"><div className="fader-fill-bar bar-amber" style={{ width: `${weatherData.ai.drivingScore}%` }}></div></div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
           </div>
 
           {/* BOTTOM FOOTER BUTTON TABS */}
           <footer className="widescreen-bottom-tabs-bar">
             <button className={`footer-tab-btn ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}><Calendar size={14} /> Weather Calendar</button>
+            <button className={`footer-tab-btn ${activeTab === 'aistudio' ? 'active' : ''}`} onClick={() => setActiveTab('aistudio')}><Disc className="vinyl-animation" size={14} /> Vatavaranam AI Anlysis</button>
             <button className={`footer-tab-btn ${activeTab === 'planner' ? 'active' : ''}`} onClick={() => setActiveTab('planner')}><Briefcase size={14} /> Event Planner</button>
             <button className={`footer-tab-btn ${activeTab === 'compare' ? 'active' : ''}`} onClick={() => setActiveTab('compare')}><ArrowLeftRight size={14} /> Compare Cities</button>
             <button className={`footer-tab-btn ${activeTab === 'ranking' ? 'active' : ''}`} onClick={() => setActiveTab('ranking')}><Trophy size={14} /> Station Rankings</button>
