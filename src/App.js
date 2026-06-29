@@ -39,8 +39,12 @@ function App() {
       const currentRes = await axios.get(url);
 
       const aiMetrics = generateAIFeatures(currentRes.data);
+      
+      // એસ્ટ્રોનોમી ડેટા ગણતરી કનેક્ટ કરો
+      const astroMetrics = calculateAstronomyData(currentRes.data);
 
-      setWeatherData({ ...currentRes.data, ai: aiMetrics });
+      // સ્ટેટ અપડેટમાં ai અને astro બંને જોડી દો
+      setWeatherData({ ...currentRes.data, ai: aiMetrics, astro: astroMetrics });
 
       // Recent Searches માં સિટી એડ કરવાની ટ્રિક
       saveToRecent(currentRes.data.name);
@@ -140,13 +144,41 @@ function App() {
   };
 
   const getEventFeasibility = () => {
-    if (!weatherData) return { text: 'No Data', color: '#64748b' };
-    const isRain = ['Rain', 'Thunderstorm'].includes(weatherData.weather[0].main);
-    if (selectedEvent === 'shoot') {
-      if (isRain) return { text: 'વરસાદી ટ્રેક ચાલુ છે! આઉટડોર શૂટ ઇન્ડોર્સ શિફ્ટ કરો.', color: '#ef4444' };
-      return { text: 'આઉટડોર સિનેમેટિક શૂટ માટે એકદમ પર્ફેક્ટ સોફ્ટ લાઇટિંગ વાઇબ.', color: '#10b981' };
+    if (!weatherData) return { text: 'No atmospheric data synced.', color: '#64748b' };
+    
+    const temp = Math.round(weatherData.main.temp);
+    const condition = weatherData.weather[0].main;
+    const wind = weatherData.wind.speed;
+    const isRain = ['Rain', 'Drizzle', 'Thunderstorm'].includes(condition);
+
+    switch (selectedEvent) {
+      case 'shoot':
+        if (isRain) return { text: 'Rain frequency active! Relocate your outdoor cinematic shoot indoors immediately.', color: '#ef4444' };
+        if (temp > 35) return { text: 'Harsh sunlight detected. Lighting might be too overexposed for scenic tracking.', color: '#f59e0b' };
+        return { text: 'Perfect atmospheric balance. Soft diffusion lighting is ideal for cinematic outdoor captures.', color: '#10b981' };
+
+      case 'party':
+        if (isRain) return { text: 'Storm alert on the radar. Shift your rooftop setup to an indoor studio stage.', color: '#ef4444' };
+        if (wind > 12) return { text: 'High wind velocity detected. Secure your audio gear and outdoor decor panels.', color: '#f59e0b' };
+        return { text: 'Excellent open-air conditions. Clear frequencies for a perfect terrace studio party.', color: '#10b981' };
+
+      case 'cricket':
+        if (isRain) return { text: 'Match canceled or delayed. High dampness on the pitch track.', color: '#ef4444' };
+        if (temp > 38) return { text: 'Extreme heat warning active. High exhaustion index for outdoor sports.', color: '#f59e0b' };
+        return { text: 'Flawless outfield conditions. Perfect weather track to play or stream a cricket match.', color: '#10b981' };
+
+      case 'garden':
+        if (isRain) return { text: 'Natural precipitation is high. Postpone any fertilizer or chemical spraying.', color: '#f59e0b' };
+        if (temp > 36) return { text: 'High soil moisture evaporation. Increase root hydration early in the morning.', color: '#3b82f6' };
+        return { text: 'Optimal climate window. Perfect state for standard watering, potting, or trimming plants.', color: '#10b981' };
+
+      case 'travel':
+        if (isRain) return { text: 'Poor visibility and wet tarmac tracks. Postpone long-distance highway commutes.', color: '#ef4444' };
+        return { text: 'Clear path visibility status. Safe atmospheric track for transit or inter-city travel.', color: '#10b981' };
+
+      default:
+        return { text: 'Atmosphere is stable for general tasks.', color: '#10b981' };
     }
-    return { text: 'વાતાવરણ અનુકૂળ છે, ઇવેન્ટ પ્લાન રેડી કરી શકો છો.', color: '#10b981' };
   };
 
   const generateAIFeatures = (data) => {
@@ -181,6 +213,47 @@ function App() {
     return {
       summary, travel, outfit, health, farming, workout,
       picnicScore, beachScore, drivingScore
+    };
+  };
+
+  const calculateAstronomyData = (data) => {
+    if (!data || !data.sys) return null;
+
+    const sunriseTS = data.sys.sunrise;
+    const sunsetTS = data.sys.sunset;
+
+    // ૧. Day Length (કુલ દિવસ કેટલો લાંબો છે)
+    const totalSeconds = sunsetTS - sunriseTS;
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const dayLength = `${hours}h ${minutes}m`;
+
+    // ૨. Solar Noon (મધ્યહ્ન - જ્યારે સૂર્ય બરાબર મધ્યમાં હોય)
+    const solarNoonTS = sunriseTS + (totalSeconds / 2);
+    const solarNoon = new Date(solarNoonTS * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    // ૩. Golden Hour & Blue Hour (સિનેમેટિક શૂટ માટે મોસ્ટ ઈમ્પોર્ટન્ટ)
+    // સૂર્યોદય પછીની અને સૂર્યાસ્ત પહેલાની ૪0 મિનિટ
+    const formatTimeOffset = (timestamp, offsetMinutes) => {
+      return new Date((timestamp + (offsetMinutes * 60)) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const morningGoldenHour = `${formatTimeOffset(sunriseTS, 0)} - ${formatTimeOffset(sunriseTS, 45)}`;
+    const eveningGoldenHour = `${formatTimeOffset(sunsetTS, -45)} - ${formatTimeOffset(sunsetTS, 0)}`;
+    const eveningBlueHour = `${formatTimeOffset(sunsetTS, 0)} - ${formatTimeOffset(sunsetTS, 30)}`;
+
+    // ૪. Moonrise/Moonset (ફ્રી API ટ્રીક: સૂર્યાસ્ત અને સૂર્યોદયના અંદાજિત ઓફસેટ પરથી લોફાઇ ટ્રેકિંગ)
+    const moonrise = new Date((sunsetTS + 3600) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const moonset = new Date((sunriseTS + 7200) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    return {
+      dayLength,
+      solarNoon,
+      morningGoldenHour,
+      eveningGoldenHour,
+      eveningBlueHour,
+      moonrise,
+      moonset
     };
   };
 
@@ -345,6 +418,37 @@ function App() {
               </div>
             </div>
 
+            {/* BOTTOM FULL-WIDTH MODULE: AI CELESTIAL TRACKER */}
+                <div className="astro-matrix-card">
+                  <h4 className="astro-matrix-title">🌎 AI CELESTIAL & ASTRONOMY TRACK</h4>
+                  <div className="astro-matrix-grid">
+                    <div className="astro-node">
+                      <span className="astro-label">DAY LENGTH SPECTRUM</span>
+                      <h3>{weatherData.astro?.dayLength || '--:--'}</h3>
+                    </div>
+                    <div className="astro-node">
+                      <span className="astro-label">SOLAR NOON TIMELINE</span>
+                      <h3>{weatherData.astro?.solarNoon || '--:--'}</h3>
+                    </div>
+                    <div className="astro-node">
+                      <span className="astro-label">🌅 MORNING GOLDEN HOUR</span>
+                      <h3 className="text-amber">{weatherData.astro?.morningGoldenHour || '--:--'}</h3>
+                    </div>
+                    <div className="astro-node">
+                      <span className="astro-label">🌇 EVENING GOLDEN HOUR</span>
+                      <h3 className="text-amber">{weatherData.astro?.eveningGoldenHour || '--:--'}</h3>
+                    </div>
+                    <div className="astro-node">
+                      <span className="astro-label">🌌 CINEMATIC BLUE HOUR</span>
+                      <h3 className="text-blue">{weatherData.astro?.eveningBlueHour || '--:--'}</h3>
+                    </div>
+                    <div className="astro-node">
+                      <span className="astro-label">🌙 ESTIMATED MOONRISE / SET</span>
+                      <h3>{weatherData.astro?.moonrise || '--:--'} / {weatherData.astro?.moonset || '--:--'}</h3>
+                    </div>
+                  </div>
+                </div>
+
           </div>
 
           {/* CENTRAL DYNAMIC FORECAST VIEWPORT */}
@@ -364,14 +468,25 @@ function App() {
             {activeTab === 'planner' && (
               <div className="planner-view-card animate-render">
                 <div className="planner-select-row">
-                  <label>Select Event Track:</label>
+                  <label className="planner-label">
+                    SELECT EVENT TRACK:
+                  </label>
                   <select value={selectedEvent} onChange={(e) => setSelectedEvent(e.target.value)}>
-                    <option value="shoot">Cinematic Outdoor Shoot</option>
-                    <option value="party">Terrace Vibe Party</option>
+                    <option value="shoot">🎥 Cinematic Outdoor Shoot</option>
+                    <option value="party">🎵 Terrace Studio Vibe Party</option>
+                    <option value="cricket">🏏 Outdoor Sports & Cricket</option>
+                    <option value="garden">🌱 Botanical & Home Gardening</option>
+                    <option value="travel">🚗 Transit & Highway Travel</option>
                   </select>
                 </div>
+                
                 <div className="planner-result-alert" style={{ borderLeftColor: getEventFeasibility().color }}>
-                  <p style={{ color: getEventFeasibility().color }}>{getEventFeasibility().text}</p>
+                  <h5 className="feasibility-title" style={{ color: getEventFeasibility().color }}>
+                    FEASIBILITY REPORT
+                  </h5>
+                  <p className="feasibility-text">
+                    {getEventFeasibility().text}
+                  </p>
                 </div>
               </div>
             )}

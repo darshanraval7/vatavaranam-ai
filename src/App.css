@@ -449,6 +449,41 @@ body {
     grid-template-columns: 1fr !important;
     gap: 16px;
   }
+
+  /* મોબાઇલ સ્ક્રીન પર સિલેક્ટ બોક્સ અને રિપોર્ટ ઓવરફ્લો ન થાય તે માટે */
+  .planner-select-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .planner-select-row select {
+    width: 100%; /* મોબાઇલમાં ડ્રોપડાઉન આખી વિડ્થ લેશે */
+  }
+
+  .feasibility-text {
+    font-size: 12px; /* સેલફોન સ્ક્રીન માટે કમ્પેક્ટ અક્ષરો */
+  }
+
+  /* સેલફોન સ્ક્રીન પર એસ્ટ્રોનોમી કાર્ડ પ્રોપર રિસ્પોન્સિવ સેટિંગ */
+  .widescreen-workspace-grid .astro-matrix-card {
+    grid-column: span 1 !important; /* મોબાઇલમાં ૨ કોલમ નથી એટલે સ્પેન ૧ થઈ જશે */
+    padding: 18px 14px;
+  }
+
+  .astro-matrix-grid {
+    grid-template-columns: repeat(2, 1fr) !important; /* મોબાઇલમાં ૩ ની જગ્યાએ ઓટોમેટીક ૨ કમ્પેક્ટ કોલમ */
+    gap: 10px;
+  }
+  
+  .astro-node {
+    padding: 12px 10px;
+  }
+  
+  .astro-node h3 {
+    font-size: 13px;
+  }
+
 }
 
 /* મિડિયમ સ્ક્રીન ટેબ્લેટ્સ (950px) માટેનું જૂનું લોજિક સેફ રાખ્યું છે */
@@ -457,3 +492,93 @@ body {
     grid-template-columns: 1fr; 
   }
 }
+
+/* Event Planner Engine Typography Specs */
+.planner-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.5px;
+}
+
+.planner-result-alert {
+  margin-top: 15px;
+  border-left: 4px solid;
+  background: #f8fafc;
+  padding: 14px;
+  border-radius: 0 12px 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.feasibility-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.feasibility-text {
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* Astronomy Celestial Grid - Full Width spanning across both columns */
+.astro-matrix-card {
+  grid-column: span 2; /* આનાથી ડેસ્કટોપ પર ડાબી અને જમણી બંને કોલમ ભેગી થઈને ફૂલ વિડ્થ કાર્ડ બનશે */
+  background: #ffffff;
+  padding: 26px;
+  border-radius: 22px;
+  border: 1px solid rgba(0, 0, 0, 0.01);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 4px 15px rgba(24, 38, 62, 0.01);
+  width: 100%;
+}
+
+.astro-matrix-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 1px;
+}
+
+.astro-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* ડેસ્કટોપ કોન્સોલ પર સરસ ૩ કોલમ */
+  gap: 16px;
+}
+
+.astro-node {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.01);
+  transition: transform 0.3s ease;
+}
+
+.astro-node:hover {
+  transform: translateY(-2px);
+}
+
+.astro-label {
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.astro-node h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.text-amber { color: #f59e0b !important; }
+.text-blue { color: #3b82f6 !important; }
