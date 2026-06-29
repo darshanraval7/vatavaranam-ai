@@ -38,13 +38,43 @@ function App() {
 
       const currentRes = await axios.get(url);
 
+      // ૧. AQI માટે અક્ષાંશ-રેખાંશ (lat, lon) મેળવો
+      const { lat, lon } = currentRes.data.coord;
+
+      // ૨. Air Pollution Free API કોલ કરો
+      const pollutionRes = await axios.get(
+        `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+      );
+
       const aiMetrics = generateAIFeatures(currentRes.data);
       
       // એસ્ટ્રોનોમી ડેટા ગણતરી કનેક્ટ કરો
       const astroMetrics = calculateAstronomyData(currentRes.data);
 
-      // સ્ટેટ અપડેટમાં ai અને astro બંને જોડી દો
-      setWeatherData({ ...currentRes.data, ai: aiMetrics, astro: astroMetrics });
+      // ૩. પોલ્યુશન ડેટા અને કમ્પોનન્ટ્સ એક્સ્ટ્રેક્ટ કરો
+      const pList = pollutionRes.data.list[0];
+      const aqiValue = pList.main.aqi; // 1 = Good, 2 = Fair, 3 = Moderate, 4 = Poor, 5 = Very Poor
+      const components = pList.components; // pm2_5, pm10, co, no2, o3, so2
+
+      // ૪. સાયન્ટિફિક હેલ્થ એડવાઇઝ ગણતરી
+      let aqiText = "Good Spectrum";
+      let aqiHealth = "Air quality is ideal for outdoor studio recording and cardio workout sessions.";
+      if (aqiValue === 2) { aqiText = "Fair Spectrum"; aqiHealth = "Acceptable air quality; sensitive individuals should monitor outdoor exposure."; }
+      else if (aqiValue === 3) { aqiText = "Moderate Noise"; aqiHealth = "Moderate pollution detected. Wear a standard filter mask if commuting long hours."; }
+      else if (aqiValue >= 4) { aqiText = "Heavy Distortion"; aqiHealth = "High pollution levels. Highly recommended to shift all activities indoors and use air purifiers."; }
+
+      // સ્ટેટ મેનેજમેન્ટમાં બધો જ ડેટા એકસાથે સેવ કરો
+      setWeatherData({ 
+        ...currentRes.data, 
+        ai: aiMetrics, 
+        astro: astroMetrics,
+        aqiData: {
+          value: aqiValue,
+          text: aqiText,
+          health: aqiHealth,
+          gases: components
+        }
+      });
 
       // Recent Searches માં સિટી એડ કરવાની ટ્રિક
       saveToRecent(currentRes.data.name);
@@ -55,11 +85,29 @@ function App() {
       else if (['Rain', 'Drizzle', 'Thunderstorm'].includes(mainState)) setWeatherVibe('vibe-rain');
       else setWeatherVibe('vibe-mist');
 
+      // --- ડાયનેમિક ડે/નાઇટ પ્રોગ્રેસ એન્જિન ---
       if (currentRes.data.sys.sunrise && currentRes.data.sys.sunset) {
-        const total = currentRes.data.sys.sunset - currentRes.data.sys.sunrise;
-        const current = (Math.floor(Date.now() / 1000)) - currentRes.data.sys.sunrise;
-        const pct = Math.min(Math.max(Math.round((current / total) * 100), 0), 100);
-        setDayProgress(pct);
+        const now = Math.floor(Date.now() / 1000);
+        const sunrise = currentRes.data.sys.sunrise;
+        const sunset = currentRes.data.sys.sunset;
+        
+        const isNight = now > sunset || now < sunrise;
+
+        if (!isNight) {
+          // દિવસનો પ્રોગ્રેસ (Sunrise થી Sunset)
+          const totalDay = sunset - sunrise;
+          const currentDay = now - sunrise;
+          const pct = Math.min(Math.max(Math.round((currentDay / totalDay) * 100), 0), 100);
+          setDayProgress(pct);
+        } else {
+          // રાતનો પ્રોગ્રેસ (Sunset થી Sunrise)
+          // જો અડધી રાત પછીનો સમય હોય તો સૂર્યાસ્ત ગઈકાલનો ગણાય એટલે ઓફસેટ સેટ કરવો
+          const adjustedSunset = now < sunrise ? sunset - 86400 : sunset; 
+          const totalNight = sunrise - adjustedSunset;
+          const currentNight = now - adjustedSunset;
+          const pct = Math.min(Math.max(Math.round((currentNight / totalNight) * 100), 0), 100);
+          setDayProgress(pct);
+        }
       }
 
       const forecastRes = await axios.get(
@@ -365,15 +413,38 @@ function App() {
 
               {/* TIMELINE PROGRESS SCRUB BAR */}
               <div className="audio-scrub-container">
-                <div className="scrub-time-labels">
-                  <span className="sun-time-node"><Sunrise size={12} /> {formatTime(weatherData.sys.sunrise)}</span>
-                  <span className="scrub-center-tag">DAYTIME SPECTRUM</span>
-                  <span className="sun-time-node"><Sunset size={12} /> {formatTime(weatherData.sys.sunset)}</span>
-                </div>
-                <div className="scrub-track-bg">
-                  <div className="scrub-progress-fill" style={{ width: `${dayProgress}%` }}></div>
-                  <div className="scrub-handle-knob" style={{ left: `${dayProgress}%` }}></div>
-                </div>
+                {(() => {
+                  const now = Math.floor(Date.now() / 1000);
+                  const isNight = now > weatherData.sys.sunset || now < weatherData.sys.sunrise;
+
+                  return (
+                    <>
+                      <div className="scrub-time-labels">
+                        {/* ડાબી બાજુનું લેબલ: દિવસે સૂર્યોદય, રાત્રે સૂર્યાસ્ત */}
+                        <span className="sun-time-node">
+                          {isNight ? <Sunset size={12} /> : <Sunrise size={12} />} 
+                          {isNight ? formatTime(weatherData.sys.sunset) : formatTime(weatherData.sys.sunrise)}
+                        </span>
+                        
+                        {/* સેન્ટર ટ્રેક સ્ટેટસ */}
+                        <span className={`scrub-center-tag ${isNight ? 'night-track' : ''}`}>
+                          {isNight ? 'NIGHTTIME FREQUENCY' : 'DAYTIME SPECTRUM'}
+                        </span>
+                        
+                        {/* જમણી બાજુનું લેબલ: દિવસે સૂર્યાસ્ત, રાત્રે સૂર્યોદય */}
+                        <span className="sun-time-node">
+                          {isNight ? <Sunrise size={12} /> : <Sunset size={12} />} 
+                          {isNight ? formatTime(weatherData.sys.sunrise) : formatTime(weatherData.sys.sunset)}
+                        </span>
+                      </div>
+                      
+                      <div className="scrub-track-bg">
+                        <div className="scrub-progress-fill" style={{ width: `${dayProgress}%` }}></div>
+                        <div className="scrub-handle-knob" style={{ left: `${dayProgress}%` }}></div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
@@ -448,6 +519,50 @@ function App() {
                     </div>
                   </div>
                 </div>
+
+            {/* BOTTOM FULL-WIDTH MODULE 2: AI ATMOSPHERIC NOISE & AQI */}
+            {weatherData?.aqiData && (
+              <div className="aqi-matrix-card">
+                <div className="aqi-header-row">
+                  <h4 className="aqi-matrix-title">🌬️ AI ATMOSPHERIC NOISE & AQI MONITOR</h4>
+                  <span className={`aqi-badge status-val-${weatherData.aqiData.value}`}>
+                    STATUS: {weatherData.aqiData.text} ({weatherData.aqiData.value}/5)
+                  </span>
+                </div>
+
+                <div className="aqi-report-alert">
+                  <h5 className="aqi-health-title">HEALTH RECOMMENDATION REPORT</h5>
+                  <p className="aqi-health-text">"{weatherData.aqiData.health}"</p>
+                </div>
+
+                <div className="aqi-gases-grid">
+                  <div className="gas-node">
+                    <span className="gas-label">PM2.5 <small>(Fine Dust)</small></span>
+                    <h3>{weatherData.aqiData.gases.pm2_5} <small>µg/m³</small></h3>
+                  </div>
+                  <div className="gas-node">
+                    <span className="gas-label">PM10 <small>(Coarse Dust)</small></span>
+                    <h3>{weatherData.aqiData.gases.pm10} <small>µg/m³</small></h3>
+                  </div>
+                  <div className="gas-node">
+                    <span className="gas-label">CO <small>(Carbon Monoxide)</small></span>
+                    <h3>{weatherData.aqiData.gases.co} <small>µg/m³</small></h3>
+                  </div>
+                  <div className="gas-node">
+                    <span className="gas-label">NO₂ <small>(Nitrogen Dioxide)</small></span>
+                    <h3>{weatherData.aqiData.gases.no2} <small>µg/m³</small></h3>
+                  </div>
+                  <div className="gas-node">
+                    <span className="gas-label">O₃ <small>(Ozone Core)</small></span>
+                    <h3>{weatherData.aqiData.gases.o3} <small>µg/m³</small></h3>
+                  </div>
+                  <div className="gas-node">
+                    <span className="gas-label">SO₂ <small>(Sulfur Dioxide)</small></span>
+                    <h3>{weatherData.aqiData.gases.so2} <small>µg/m³</small></h3>
+                  </div>
+                </div>
+              </div>
+            )}
 
           </div>
 

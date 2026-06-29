@@ -484,6 +484,32 @@ body {
     font-size: 13px;
   }
 
+  /* સેલફોન સ્ક્રીન પર એર ક્વોલિટી મોડ્યુલ ઓપ્ટિમાઇઝેશન */
+  .widescreen-workspace-grid .aqi-matrix-card {
+    grid-column: span 1 !important;
+    padding: 18px 14px;
+    margin-top: 0px;
+  }
+
+  .aqi-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .aqi-gases-grid {
+    grid-template-columns: repeat(2, 1fr) !important; /* મોબાઇલમાં સ્મૂધ ૨-કોલમ ગ્રીડ */
+    gap: 10px;
+  }
+  
+  .gas-node {
+    padding: 12px 10px;
+  }
+  
+  .gas-node h3 {
+    font-size: 13px;
+  }
+
 }
 
 /* મિડિયમ સ્ક્રીન ટેબ્લેટ્સ (950px) માટેનું જૂનું લોજિક સેફ રાખ્યું છે */
@@ -582,3 +608,106 @@ body {
 
 .text-amber { color: #f59e0b !important; }
 .text-blue { color: #3b82f6 !important; }
+
+/* Air Quality Index (AQI) Dashboard Engine CSS */
+.aqi-matrix-card {
+  grid-column: span 2; /* લેપટોપ પર આખું વાઈડ આડું કાર્ડ બનશે */
+  background: #ffffff;
+  padding: 26px;
+  border-radius: 22px;
+  border: 1px solid rgba(0, 0, 0, 0.01);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 4px 15px rgba(24, 38, 62, 0.01);
+  width: 100%;
+  margin-top: -10px; /* એસ્ટ્રોનોમી કાર્ડની સાથે પ્રોપર સ્પેસિંગ માટે */
+}
+
+.aqi-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.aqi-matrix-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 1px;
+}
+
+.aqi-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 30px;
+  letter-spacing: 0.5px;
+}
+
+/* ડાયનેમિક પોલ્યુશન કલર કોડિંગ */
+.status-val-1, .status-val-2 { background: rgba(16, 185, 129, 0.08); color: #10b981; }
+.status-val-3 { background: rgba(245, 158, 11, 0.08); color: #f59e0b; }
+.status-val-4, .status-val-5 { background: rgba(239, 68, 68, 0.08); color: #ef4444; }
+
+.aqi-report-alert {
+  border-left: 4px solid #06b6d4;
+  background: #f8fafc;
+  padding: 14px;
+  border-radius: 0 12px 12px 0;
+}
+
+.aqi-health-title {
+  font-size: 10px;
+  font-weight: 800;
+  color: #06b6d4;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.aqi-health-text {
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.aqi-gases-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* ડેસ્કટોપ વ્યુ પર ૩ કૉલમ */
+  gap: 16px;
+}
+
+.gas-node {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.01);
+}
+
+.gas-label {
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.gas-node h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.gas-node h3 small {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Night Mode Track Custom Neon Glow */
+.scrub-center-tag.night-track {
+  color: #a855f7; /* લૉફાઇ નાઇટ વાઇબ માટે સુંદર પર્પલ કલર */
+  text-shadow: 0 0 8px rgba(168, 85, 247, 0.2);
+}
