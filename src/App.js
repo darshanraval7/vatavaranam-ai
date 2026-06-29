@@ -334,10 +334,62 @@ function App() {
   const coldestCity = [...leaderboard].sort((a, b) => a.temp - b.temp)[0];
   const rainiestCity = leaderboard.find(c => ['Rain', 'Thunderstorm'].includes(c.condition)) || [...leaderboard].sort((a, b) => b.humidity - a.humidity)[0];
 
+  // કરંટ વેધર કન્ડિશન ચેક કરો
+  const currentCondition = weatherData ? weatherData.weather[0].main : 'Clear';
+
   return (
     <div className={`full-page-studio ${weatherVibe}`}>
+      
+      {/* 🔮 GLASSMORPHISM DYNAMIC BACKGROUND SPECTRUM */}
       <div className="pastel-aura-1"></div>
       <div className="pastel-aura-2"></div>
+
+      {/* 🌧️ ANIMATED RAIN ENGINE (More Drops Added) */}
+      {['Rain', 'Drizzle'].includes(currentCondition) && (
+        <div className="ambient-rain-visualizer">
+          <span className="rain-drop-line"></span>
+          <span className="rain-drop-line"></span>
+          <span className="rain-drop-line"></span>
+          <span className="rain-drop-line"></span>
+          <span className="rain-drop-line"></span>
+          <span className="rain-drop-line"></span>
+          <span className="rain-drop-line"></span>
+          <span className="rain-drop-line"></span>
+        </div>
+      )}
+
+      {/* ⚡ THUNDER EFFECT LAYER */}
+      {currentCondition === 'Thunderstorm' && (
+        <>
+          <div className="ambient-thunder-flash"></div>
+          <div className="ambient-rain-visualizer">
+            <span className="rain-drop-line"></span>
+            <span className="rain-drop-line"></span>
+            <span className="rain-drop-line"></span>
+            <span className="rain-drop-line"></span>
+            <span className="rain-drop-line"></span>
+          </div>
+        </>
+      )}
+
+      {/* ❄️ ANIMATED SNOW ENGINE (More Flakes Added) */}
+      {currentCondition === 'Snow' && (
+        <div className="ambient-snow-visualizer">
+          <div className="snowflake-node"></div>
+          <div className="snowflake-node"></div>
+          <div className="snowflake-node"></div>
+          <div className="snowflake-node"></div>
+          <div className="snowflake-node"></div>
+        </div>
+      )}
+
+      {/* ☁️ ANIMATED BACKGROUND CLOUDS */}
+      {currentCondition === 'Clouds' && (
+        <div className="ambient-cloud-drift">
+          <div className="drift-cloud-1"></div>
+          <div className="drift-cloud-2"></div>
+        </div>
+      )}
 
       {/* CLOUD LOADER ENGINE STRUCTURE */}
       {loading && (

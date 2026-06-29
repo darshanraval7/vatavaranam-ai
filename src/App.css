@@ -711,3 +711,447 @@ body {
   color: #a855f7; /* લૉફાઇ નાઇટ વાઇબ માટે સુંદર પર્પલ કલર */
   text-shadow: 0 0 8px rgba(168, 85, 247, 0.2);
 }
+
+/* ================= VISUAL KINETIC EFFECTS ENGINE ================= */
+
+/* ૧. Smooth Transitions & Glassmorphism Core Specs */
+.full-page-studio {
+  transition: background 0.8s ease-in-out;
+}
+
+.widescreen-dashboard-frame {
+  background: rgba(255, 255, 255, 0.72) !important; /* હજી વધારે પ્રીમિયમ ગ્લાસ લુક */
+  backdrop-filter: blur(30px) !important;
+  -webkit-backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ૨. Animated Rain - લાઇવ લૉફાઇ રેઇન ડ્રોપ્સ */
+.ambient-rain-visualizer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.35;
+  overflow: hidden;
+}
+
+.rain-drop-line {
+  position: absolute;
+  background: linear-gradient(transparent, #06b6d4);
+  width: 1.5px;
+  height: 55px;
+  animation: rainFallTrack 0.6s infinite linear;
+}
+.rain-drop-line:nth-child(1) { left: 18%; animation-duration: 0.55s; }
+.rain-drop-line:nth-child(2) { left: 45%; animation-delay: 0.2s; animation-duration: 0.65s; }
+.rain-drop-line:nth-child(3) { left: 60%; animation-delay: 0.1s; animation-duration: 0.6s; }
+.rain-drop-line:nth-child(4) { left: 82%; animation-delay: 0.35s; animation-duration: 0.5s; }
+.rain-drop-line:nth-child(5) { left: 92%; animation-delay: 0.15s; animation-duration: 0.7s; }
+
+@keyframes rainFallTrack {
+  0% { transform: translateY(-80px) rotate(12deg); }
+  100% { transform: translateY(100vh) rotate(12deg); }
+}
+
+/* ૩. Thunder Effect - સોફ્ટ એમ્બિયન્ટ લાઇટનિંગ ફ્લેશ */
+.ambient-thunder-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  animation: thunderStrobe 2s infinite ease-in-out;
+}
+
+@keyframes thunderStrobe {
+  0%, 94%, 97%, 100% { opacity: 0; }
+  95%, 96% { opacity: 0.18; }
+}
+
+/* ૪. Animated Snow - કમ્ફર્ટ સ્નો ફ્લેક્સ */
+.ambient-snow-visualizer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.snowflake-node {
+  position: absolute;
+  background: #ffffff;
+  border-radius: 50%;
+  width: 5px;
+  height: 5px;
+  opacity: 0.7;
+  animation: snowDropTrack 5s infinite linear;
+}
+.snowflake-node:nth-child(1) { left: 20%; animation-duration: 5.5s; }
+.snowflake-node:nth-child(2) { left: 50%; animation-delay: 1s; animation-duration: 6.5s; }
+.snowflake-node:nth-child(3) { left: 75%; animation-delay: 0.4s; animation-duration: 4.8s; }
+
+@keyframes snowDropTrack {
+  0% { transform: translateY(-10px) translateX(0); }
+  50% { transform: translateY(50vh) translateX(15px); }
+  100% { transform: translateY(100vh) translateX(-5px); }
+}
+
+/* ૫. Animated Clouds - પૃષ્ઠભૂમિમાં ધીમેથી સરકતા વાદળો */
+.ambient-cloud-drift {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.25;
+  overflow: hidden;
+}
+
+.drift-cloud-1, .drift-cloud-2 {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 100px;
+  filter: blur(20px);
+}
+
+.drift-cloud-1 { width: 300px; height: 100px; top: 15%; left: -350px; animation: cloudDriftTrack 35s linear infinite; }
+.drift-cloud-2 { width: 200px; height: 80px; top: 40%; left: -250px; animation: cloudDriftTrack 25s linear infinite 5s; }
+
+@keyframes cloudDriftTrack {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(100vw + 400px)); }
+}
+
+/* ================= VISUAL KINETIC EFFECTS ENGINE (SKY BLUE EDITION) ================= */
+
+/* ૧. Smooth Transitions & Dynamic Sky Blue Backgrounds */
+.full-page-studio {
+  transition: background 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* જ્યારે ક્લિયર વેધર હોય ત્યારે તમારો ઓરિજિનલ વ્હાઇટ લુક રહેશે */
+.vibe-clear { 
+  background: radial-gradient(circle at center, #f4f7fc 0%, #eef2f7 100%) !important; 
+}
+
+/* ☁️ વાદળો હોય ત્યારે બેકગ્રાઉન્ડ સહેજ ક્લાઉડી સોફ્ટ બ્લુ થશે */
+.vibe-clouds { 
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%) !important; 
+}
+
+/* 🌧️ વરસાદ અથવા વીજળી હોય ત્યારે ડાર્ક મોનસૂન સ્કાય બ્લુ (ઇફેક્ટ્સ એકદમ ક્લીન દેખાશે) */
+.vibe-rain { 
+  background: linear-gradient(135deg, #7dd3fc 0%, #0284c7 100%) !important; 
+}
+
+/* 🌫️ ધુમ્મસ હોય ત્યારે સ્મોકી આકાશી કલર */
+.vibe-mist { 
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important; 
+}
+
+/* ૨. Animated Rain - સ્ક્રીન પર પડતો લાઈવ વરસાદ (હવે કલર ડાર્ક બ્લુ કર્યો છે જેથી વ્હાઇટ ગ્લાસ પર પણ દેખાય) */
+.ambient-rain-visualizer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.6; /* ઇન્ટેન્સિટી વધારી છે */
+  overflow: hidden;
+}
+
+.rain-drop-line {
+  position: absolute;
+  background: linear-gradient(transparent, #0284c7); /* ડાર્ક આકાશી કલરની રેખાઓ */
+  width: 2px; /* સહેજ જાડી કરી જેથી દેખાય */
+  height: 60px;
+  animation: rainFallTrack 0.5s infinite linear;
+}
+.rain-drop-line:nth-child(1) { left: 15%; animation-duration: 0.45s; }
+.rain-drop-line:nth-child(2) { left: 35%; animation-delay: 0.15s; animation-duration: 0.55s; }
+.rain-drop-line:nth-child(3) { left: 55%; animation-delay: 0.05s; animation-duration: 0.5s; }
+.rain-drop-line:nth-child(4) { left: 75%; animation-delay: 0.25s; animation-duration: 0.4s; }
+.rain-drop-line:nth-child(5) { left: 90%; animation-delay: 0.1s; animation-duration: 0.6s; }
+
+@keyframes rainFallTrack {
+  0% { transform: translateY(-80px) rotate(15deg); }
+  100% { transform: translateY(100vh) rotate(15deg); }
+}
+
+/* ૩. Thunder Effect - વીજળીનો તેજસ્વી સોફ્ટ ચમકારો */
+.ambient-thunder-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  animation: thunderStrobe 5s infinite ease-in-out;
+}
+
+@keyframes thunderStrobe {
+  0%, 93%, 96%, 100% { opacity: 0; }
+  94%, 95% { opacity: 0.3; } /* વીજળીનો લાઈવ ફ્લેશ */
+}
+
+/* ૪. Animated Snow - બરફના ટીપાં (સ્કાય બ્લુ બેકગ્રાઉન્ડ પર હવે મસ્ત વ્હાઇટ દેખાશે) */
+.ambient-snow-visualizer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.snowflake-node {
+  position: absolute;
+  background: #ffffff;
+  border-radius: 50%;
+  width: 7px; /* સાઈઝ મોટી કરી છે */
+  height: 7px;
+  opacity: 0.85;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5); /* બરફનો ગ્લો */
+  animation: snowDropTrack 6s infinite linear;
+}
+.snowflake-node:nth-child(1) { left: 20%; animation-duration: 5s; }
+.snowflake-node:nth-child(2) { left: 50%; animation-delay: 1.2s; animation-duration: 6s; }
+.snowflake-node:nth-child(3) { left: 80%; animation-delay: 0.5s; animation-duration: 4.5s; }
+
+@keyframes snowDropTrack {
+  0% { transform: translateY(-10px) translateX(0); }
+  50% { transform: translateY(50vh) translateX(20px); }
+  100% { transform: translateY(100vh) translateX(-10px); }
+}
+
+/* ૫. Animated Background Clouds - બેકગ્રાઉન્ડમાં પફી વાદળોનો પ્રવાહ */
+.ambient-cloud-drift {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.4;
+  overflow: hidden;
+}
+
+.drift-cloud-1, .drift-cloud-2 {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 100px;
+  filter: blur(15px);
+}
+
+.drift-cloud-1 { width: 350px; height: 120px; top: 10%; left: -400px; animation: cloudDriftTrack 40s linear infinite; }
+.drift-cloud-2 { width: 250px; height: 90px; top: 35%; left: -300px; animation: cloudDriftTrack 30s linear infinite 7s; }
+
+@keyframes cloudDriftTrack {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(100vw + 450px)); }
+}
+
+/* ================= EFFECTS OVERLAY ENGINE (FOREGROUND FIX) ================= */
+
+/* ૧. વરસાદના કન્ટેનરને આખા ગ્લાસ બોક્સની ઉપર લાવવા માટે z-index: 5 કર્યો */
+.ambient-rain-visualizer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 5; /* આનાથી એ વ્હાઇટ બોક્સની ઉપર દેખાશે */
+  pointer-events: none; /* આ રાખવું જરૂરી છે જેથી બટન્સ ક્લિક થઈ શકે */
+  opacity: 0.65;
+  overflow: hidden;
+}
+
+/* વરસાદના નવા ઉમેરેલા ડ્રોપ્સની સ્ક્રીન પોઝિશન અને સ્પીડ */
+.rain-drop-line:nth-child(1) { left: 10%; animation-duration: 0.45s; }
+.rain-drop-line:nth-child(2) { left: 25%; animation-delay: 0.15s; animation-duration: 0.55s; }
+.rain-drop-line:nth-child(3) { left: 45%; animation-delay: 0.05s; animation-duration: 0.5s; }
+.rain-drop-line:nth-child(4) { left: 60%; animation-delay: 0.25s; animation-duration: 0.42s; }
+.rain-drop-line:nth-child(5) { left: 75%; animation-delay: 0.1s; animation-duration: 0.6s; }
+.rain-drop-line:nth-child(6) { left: 85%; animation-delay: 0.3s; animation-duration: 0.48s; }
+.rain-drop-line:nth-child(7) { left: 95%; animation-delay: 0.2s; animation-duration: 0.52s; }
+.rain-drop-line:nth-child(8) { left: 5%;  animation-delay: 0.4s; animation-duration: 0.58s; }
+
+/* ૨. બરફના કન્ટેનરને પણ આગળ લાવો */
+.ambient-snow-visualizer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 5; /* બોક્સની ઉપર ઓવરલે */
+  pointer-events: none;
+}
+
+/* બરફના નવા ફ્લેક્સનું એનિમેશન અને વેલોસિટી */
+.snowflake-node:nth-child(1) { left: 15%; animation-duration: 5s; }
+.snowflake-node:nth-child(2) { left: 38%; animation-delay: 1.2s; animation-duration: 6s; }
+.snowflake-node:nth-child(3) { left: 60%; animation-delay: 0.5s; animation-duration: 4.5s; }
+.snowflake-node:nth-child(4) { left: 78%; animation-delay: 2s; animation-duration: 5.5s; }
+.snowflake-node:nth-child(5) { left: 92%; animation-delay: 0.8s; animation-duration: 6.2s; }
+
+/* ================= VISUAL KINETIC EFFECTS ENGINE (PREMIUM EDITION) ================= */
+
+/* ૧. Smooth Transitions & Dynamic Sky Blue Backgrounds */
+.full-page-studio {
+  transition: background 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* જ્યારે ક્લિયર વેધર હોય ત્યારે તમારો ઓરિજિનલ વ્હાઇટ લુક રહેશે */
+.vibe-clear { 
+  background: radial-gradient(circle at center, #f4f7fc 0%, #eef2f7 100%) !important; 
+}
+
+/* ☁️ વાદળો હોય ત્યારે બેકગ્રાઉન્ડ સહેજ ક્લાઉડી સોફ્ટ બ્લુ થશે */
+.vibe-clouds { 
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%) !important; 
+}
+
+/* 🌧️ વરસાદ અથવા વીજળી હોય ત્યારે ડાર્ક મોનસૂન સ્કાય બ્લુ */
+.vibe-rain { 
+  background: linear-gradient(135deg, #7dd3fc 0%, #0284c7 100%) !important; 
+}
+
+/* 🌫️ ધુમ્મસ હોય ત્યારે સ્મોકી આકાશી કલર */
+.vibe-mist { 
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important; 
+}
+
+/* ૨. Animated Rain - વ્હાઇટ બોક્સની ઉપર (Foreground) પડતો વરસાદ */
+.ambient-rain-visualizer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99; /* કન્સોલ બોક્સની બિલકુલ ઉપર લાવવા માટે */
+  pointer-events: none; 
+  opacity: 0.65;
+  overflow: hidden;
+}
+
+.rain-drop-line {
+  position: absolute;
+  background: linear-gradient(transparent, #0284c7); 
+  width: 2px; 
+  height: 60px;
+  animation: rainFallTrack 0.5s infinite linear;
+}
+.rain-drop-line:nth-child(1) { left: 10%; animation-duration: 0.45s; }
+.rain-drop-line:nth-child(2) { left: 25%; animation-delay: 0.15s; animation-duration: 0.55s; }
+.rain-drop-line:nth-child(3) { left: 45%; animation-delay: 0.05s; animation-duration: 0.5s; }
+.rain-drop-line:nth-child(4) { left: 60%; animation-delay: 0.25s; animation-duration: 0.42s; }
+.rain-drop-line:nth-child(5) { left: 75%; animation-delay: 0.1s; animation-duration: 0.6s; }
+.rain-drop-line:nth-child(6) { left: 85%; animation-delay: 0.3s; animation-duration: 0.48s; }
+.rain-drop-line:nth-child(7) { left: 95%; animation-delay: 0.2s; animation-duration: 0.52s; }
+.rain-drop-line:nth-child(8) { left: 5%;  animation-delay: 0.4s; animation-duration: 0.58s; }
+
+@keyframes rainFallTrack {
+  0% { transform: translateY(-80px) rotate(15deg); }
+  100% { transform: translateY(100vh) rotate(15deg); }
+}
+
+/* ૩. Thunder Effect - દર ૨ થી ૩ સેકન્ડે થતો તેજસ્વી સોફ્ટ ચમકારો */
+.ambient-thunder-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 1; /* બેકગ્રાઉન્ડમાં ફ્લેશ થશે જેથી આંખો ખેંચાય નહીં */
+  pointer-events: none;
+  opacity: 0;
+  animation: thunderStrobe 2.5s infinite ease-in-out; /* દર ૨.૫ સેકન્ડે વીજળી ચમકશે */
+}
+
+@keyframes thunderStrobe {
+  0%, 85%, 92%, 100% { opacity: 0; }
+  88%, 90% { opacity: 0.35; } /* ફાસ્ટ લાઇટનિંગ સ્ટ્રોબ ઇફેક્ટ */
+}
+
+/* ૪. Animated Snow - [FIXED] વ્હાઇટ બોક્સની બિલકુલ ઉપર (Foreground) લાવવા માટે z-index વધાર્યો */
+.ambient-snow-visualizer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99 !important; /* હાઇએસ્ટ પ્રાયોરિટી - વ્હાઇટ બોક્સની આગળ દેખાશે */
+  pointer-events: none;
+}
+
+.snowflake-node {
+  position: absolute;
+  background: #ffffff;
+  border-radius: 50%;
+  width: 8px; 
+  height: 8px;
+  opacity: 0.9;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); 
+  animation: snowDropTrack 5s infinite linear;
+}
+.snowflake-node:nth-child(1) { left: 15%; animation-duration: 4.5s; }
+.snowflake-node:nth-child(2) { left: 38%; animation-delay: 1s; animation-duration: 5.5s; }
+.snowflake-node:nth-child(3) { left: 60%; animation-delay: 0.5s; animation-duration: 4.2s; }
+.snowflake-node:nth-child(4) { left: 78%; animation-delay: 1.8s; animation-duration: 5s; }
+.snowflake-node:nth-child(5) { left: 92%; animation-delay: 0.8s; animation-duration: 5.8s; }
+
+@keyframes snowDropTrack {
+  0% { transform: translateY(-10px) translateX(0); }
+  50% { transform: translateY(50vh) translateX(25px); }
+  100% { transform: translateY(100vh) translateX(-15px); }
+}
+
+/* ૫. Animated Background Clouds - બેકગ્રાઉન્ડમાં પફી વાદળોનો લાઈવ ડ્રિફ્ટિંગ પ્રવાહ */
+.ambient-cloud-drift {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.5; /* વાદળો વધુ સ્પષ્ટ દેખાશે */
+  overflow: hidden;
+}
+
+.drift-cloud-1, .drift-cloud-2 {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 100px;
+  filter: blur(12px); /* થોડું ઓછું બ્લર જેથી પ્રોપર વાદળ દેખાય */
+}
+
+/* ડાબેથી જમણે વાદળ સરકવાનું એનિમેશન */
+.drift-cloud-1 { width: 380px; height: 130px; top: 8%; left: -400px; animation: cloudDriftTrack 38s linear infinite; }
+.drift-cloud-2 { width: 260px; height: 95px; top: 32%; left: -300px; animation: cloudDriftTrack 28s linear infinite 6s; }
+
+@keyframes cloudDriftTrack {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(100vw + 450px)); }
+}
