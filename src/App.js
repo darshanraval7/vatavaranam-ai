@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Search, Sun, Cloud, CloudRain, Wind, Droplets, Thermometer, CloudLightning, CloudSnow, Disc, Radio, Compass, Gauge, Eye, Sunrise, Sunset, Calendar, Briefcase, ArrowLeftRight, Trophy } from 'lucide-react';
 import './App.css';
 
-const API_KEY = "1d30e0668b384c4d133dc45fe617b03b"; 
+const API_KEY = process.env.REACT_APP_WEATHER_API_KEY; 
 
 function App() {
   const [city, setCity] = useState('Visnagar');
