@@ -140,6 +140,9 @@ function App() {
           <div className="cloud-studio-art">
             <div className="cloud-element main-cloud"></div>
             <div className="cloud-element back-cloud"></div>
+            <div className="cloud-element left-cloud"></div> {/* નવું વાદળનું બબલ */}
+            <div className="cloud-base"></div>              {/* નવો વેધર બેઝ */}
+            
             <div className="cloud-drops">
               <span className="drop"></span>
               <span className="drop"></span>

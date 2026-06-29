@@ -232,3 +232,99 @@ body {
 @keyframes heroFloat { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
 @keyframes heartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
 @keyframes filterFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ================= LO-FI CLOUD STUDIOS LOADER ENGINE ================= */
+.cloud-studio-art {
+  position: relative;
+  width: 120px;
+  height: 60px;
+  margin-bottom: 30px;
+  animation: cloudFloat 2s ease-in-out infinite alternate; /* વાદળ હવામાં તરશે */
+}
+
+/* વાદળનો આખો આકાર બનાવવા માટેના અલગ અલગ બબલ્સ */
+.cloud-element {
+  position: absolute;
+  background: #0891b2;
+  border-radius: 50%;
+}
+
+/* ૧. મુખ્ય સેન્ટર બબલ */
+.main-cloud { 
+  width: 55px; 
+  height: 55px; 
+  top: 0; 
+  left: 35px; 
+  opacity: 0.95; 
+  z-index: 2;
+}
+
+/* ૨. પાછળનું નાનું બબલ */
+.back-cloud { 
+  width: 40px; 
+  height: 40px; 
+  top: 10px; 
+  left: 70px; 
+  opacity: 0.8; 
+  z-index: 1;
+}
+
+/* ૩. ડાબી બાજુનું નાનું બબલ (આ નવું ઉમેર્યું છે) */
+.left-cloud {
+  width: 35px;
+  height: 35px;
+  top: 18px;
+  left: 15px;
+  opacity: 0.9;
+  z-index: 1;
+}
+
+/* ૪. નીચેનો ફ્લેટ બેઝ જે બધા સર્કલ્સને જોડીને વાદળ બનાવશે */
+.cloud-base {
+  position: absolute;
+  bottom: 5px;
+  left: 20px;
+  width: 80px;
+  height: 20px;
+  background: #0891b2;
+  border-radius: 20px;
+  z-index: 2;
+}
+
+/* વરસાદના ટીપાંનું સેટઅપ */
+.cloud-drops { 
+  display: flex; 
+  justify-content: center; 
+  gap: 12px; 
+  margin-top: 65px; 
+  width: 120px;
+}
+
+.drop { 
+  width: 3px; 
+  height: 12px; 
+  background: #06b6d4; 
+  border-radius: 4px; 
+  animation: rainDrop 0.8s infinite linear; 
+}
+
+/* દરેક ટીપું અલગ અલગ સમયે પડે એટલે નેચરલ લાગે */
+.drop:nth-child(1) { animation-delay: 0.1s; }
+.drop:nth-child(2) { animation-delay: 0.4s; }
+.drop:nth-child(3) { animation-delay: 0.2s; }
+
+/* --- એનિમેશન્સ --- */
+
+/* ૧. વાદળ હવામાં ધીમેથી ઉપર-નીચે તરશે */
+@keyframes cloudFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-6px); }
+}
+
+/* ૨. વરસાદ પડવાનું સ્મૂધ એનિમેશન */
+@keyframes rainDrop {
+  0% { transform: translateY(0) scaleY(1); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 0.8; }
+  100% { transform: translateY(22px) scaleY(0.8); opacity: 0; }
+}
