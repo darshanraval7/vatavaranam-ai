@@ -6,6 +6,75 @@ import './App.css';
 const API_KEY = process.env.REACT_APP_WEATHER_API_KEY; 
 
 function App() {
+
+  // Chatbot State Hooks
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState([
+    { role: 'bot', text: 'Yo! I am your Atmospheric AI Assistant. Ask me anything about today\'s studio environment or event planning.' }
+  ]);
+  const [chatLoading, setChatLoading] = useState(false);
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!chatInput.trim() || !weatherData) return;
+
+    const userMessage = chatInput.trim();
+    setChatMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    setChatInput('');
+    setChatLoading(true);
+
+    try {
+      // ૧. તમારી સાચી AQ કી પ્રોપર્ટી સેટ કરો
+      const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
+      
+      // ૨. URL માંથી ?key= વાળો ભાગ હટાવીને બિલકુલ ક્લીન ઓફિશિયલ રૂટ રાખ્યો
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`;
+
+      // લૉફાઇ સ્ટુડિયો થીમ કોન્ટેક્સ્ટ પ્રોમ્પ્ટ
+      const systemPrompt = `You are the AI Weather Assistant for "Vatavaranam.ai", a premium music-console themed weather app. 
+      Current Location: ${weatherData.name}. 
+      Current Weather: ${Math.round(weatherData.main.temp)}°C, ${weatherData.weather[0].description}. 
+      Humidity: ${weatherData.main.humidity}%, Wind: ${weatherData.wind.speed} m/s.
+      Air Quality (AQI): ${weatherData.aqiData?.text || 'Good Spectrum'}.
+      Answer the user's question directly based on this atmospheric data. Keep your professional tone concise, cool, and use a slight lo-fi studio/audio terminology (like tracks, frequencies, beats, balance). Provide answers strictly in English only. Do not use markdown bullet lists, keep text in paragraph form.`;
+
+      const payload = {
+        contents: [{
+          parts: [{ text: `${systemPrompt}\n\nUser Question: ${userMessage}` }]
+        }]
+      };
+
+      // ૩. કીને 'X-goog-api-key' હેડર તરીકે પાસ કરો (બિલકુલ curl કમાન્ડની જેમ)
+      const response = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-goog-api-key': apiKey
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const resData = await response.json();
+
+      if (!response.ok) {
+        console.error("Google Server Error:", resData);
+        throw new Error(resData.error?.message || `HTTP Error ${response.status}`);
+      }
+      
+      // 🚀 SAFE EXTRACTION: જો ડેટા ક્યાંય પણ મિસિંગ હોય તો સેફ ટેક્સ્ટ પકડી લેશે
+      const responseText = resData.candidates?.[0]?.content?.parts?.[0]?.text 
+        || "Transmission frequencies matched nicely, but text decoding had a minor flutter. Ask me again, bro!";
+      
+      setChatMessages(prev => [...prev, { role: 'bot', text: responseText }]);
+      
+    } catch (err) {
+      console.error("Gemini uplink offline:", err);
+      setChatMessages(prev => [...prev, { role: 'bot', text: 'Transmission gap detected. Please verify your system console network frequencies.' }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   const [city, setCity] = useState('Visnagar');
   const [weatherData, setWeatherData] = useState(null);
   const [forecastData, setForecastData] = useState([]);
@@ -748,6 +817,43 @@ function App() {
               </div>
             )}
 
+            {activeTab === 'aichat' && (
+              <div className="planner-view-card animate-render">
+                <h4 className="astro-matrix-title" style={{ marginBottom: '15px' }}>💬 ATMOSPHERIC AI CHAT STATION</h4>
+                
+                {/* CHAT DISPLAY SCREEN */}
+                <div className="chat-display-box">
+                  {chatMessages.map((msg, idx) => (
+                    <div key={idx} className={`chat-bubble-row ${msg.role === 'user' ? 'user-end' : 'bot-end'}`}>
+                      <div className="chat-bubble">
+                        <span className="chat-meta">{msg.role === 'user' ? '📦 YOU' : '✨ AI FREQUENCY'}</span>
+                        <p>{msg.text}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {chatLoading && (
+                    <div className="chat-bubble-row bot-end">
+                      <div className="chat-bubble loading-bubble">
+                        <p>Decoding satellite frequencies...</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* INPUT MESSAGE FORM */}
+                <form onSubmit={handleSendMessage} className="chat-input-form">
+                  <input 
+                    type="text" 
+                    placeholder="Ask something about today's environment..." 
+                    value={chatInput} 
+                    onChange={(e) => setChatInput(e.target.value)}
+                    disabled={chatLoading}
+                  />
+                  <button type="submit" disabled={chatLoading || !chatInput.trim()}>SEND</button>
+                </form>
+              </div>
+            )}
+
           </div>
 
           {/* BOTTOM FOOTER BUTTON TABS */}
@@ -757,6 +863,8 @@ function App() {
             <button className={`footer-tab-btn ${activeTab === 'planner' ? 'active' : ''}`} onClick={() => setActiveTab('planner')}><Briefcase size={14} /> Event Planner</button>
             <button className={`footer-tab-btn ${activeTab === 'compare' ? 'active' : ''}`} onClick={() => setActiveTab('compare')}><ArrowLeftRight size={14} /> Compare Cities</button>
             <button className={`footer-tab-btn ${activeTab === 'ranking' ? 'active' : ''}`} onClick={() => setActiveTab('ranking')}><Trophy size={14} /> Station Rankings</button>
+            {/* આ લાઇન ફૂટર બારમાં ગમે ત્યાં બટનની લિસ્ટમાં જોડી દો */}
+            <button className={`footer-tab-btn ${activeTab === 'aichat' ? 'active' : ''}`} onClick={() => setActiveTab('aichat')}><Radio className="pulse-heartbeat" size={14} /> Vatavaranam AI Chat</button>
           </footer>
 
         </div>
