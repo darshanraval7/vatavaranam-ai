@@ -404,8 +404,8 @@ function App() {
   const rainiestCity = leaderboard.find(c => ['Rain', 'Thunderstorm'].includes(c.condition)) || [...leaderboard].sort((a, b) => b.humidity - a.humidity)[0];
 
   // કરંટ વેધર કન્ડિશન ચેક કરો
-  const currentCondition = weatherData ? weatherData.weather[0].main : 'Clear';
-
+  let currentCondition = weatherData ? weatherData.weather[0].main : 'Clear';
+  currentCondition = (city === 'varasad') ? 'Rain' : (city === 'tofan') ? 'Thunderstorm' : (city === 'baraf') ? 'Snow' : (city === 'vadal') ? 'Clouds' : currentCondition;
   return (
     <div className={`full-page-studio ${weatherVibe}`}>
       
