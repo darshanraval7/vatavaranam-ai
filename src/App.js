@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Sun, Cloud, CloudRain, Wind, Droplets, Thermometer, CloudLightning, CloudSnow, Disc, Radio, Compass, Gauge, Eye, Sunrise, Sunset, Calendar, Briefcase, ArrowLeftRight, Trophy } from 'lucide-react';
 import './App.css';
+import { incrementVisitCount } from './services/counterService';
 
 const API_KEY = process.env.REACT_APP_WEATHER_API_KEY; 
 
@@ -13,6 +14,17 @@ function App() {
     { role: 'bot', text: 'Yo! I am your Atmospheric AI Assistant. Ask me anything about today\'s studio environment or event planning.' }
   ]);
   const [chatLoading, setChatLoading] = useState(false);
+  const [totalVisits, setTotalVisits] = useState(0);
+
+  useEffect(() => {
+    // App open hote hi Count +1
+    const trackPageHit = async () => {
+      const count = await incrementVisitCount();
+      if (count) setTotalVisits(count);
+    };
+
+    trackPageHit();
+  }, []);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -509,7 +521,16 @@ function App() {
             </form>
 
             <div className="nav-right-status">
-              <div className="live-pill"><Radio size={11} /> LIVE FEED</div>
+              {/* Weather & Studio Themed Visits Counter Badge */}
+              <div className="live-pill visit-pill">
+                <Cloud size={12} className="cloud-vibe-icon" />
+                <span>ATMOSPHERIC HITS</span>
+                <strong className="visit-count-num">{totalVisits ? totalVisits.toLocaleString() : '...'}</strong>
+              </div>
+
+              <div className="live-pill">
+                <Radio size={11} /> LIVE FEED
+              </div>
             </div>
           </header>
 
