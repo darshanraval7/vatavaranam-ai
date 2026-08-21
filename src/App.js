@@ -14,7 +14,14 @@ function App() {
     { role: 'bot', text: 'Yo! I am your Atmospheric AI Assistant. Ask me anything about today\'s studio environment or event planning.' }
   ]);
   const [chatLoading, setChatLoading] = useState(false);
-  const [totalVisits, setTotalVisits] = useState(0);
+  const [totalVisits, setTotalVisits] = useState(() => {
+    try {
+      const saved = localStorage.getItem('vatavaranam_ai_visit_hits');
+      return saved ? parseInt(saved, 10) : 149;
+    } catch {
+      return 149;
+    }
+  });
 
   useEffect(() => {
     // App open hote hi Count +1
@@ -525,7 +532,7 @@ function App() {
               <div className="live-pill visit-pill">
                 <Cloud size={12} className="cloud-vibe-icon" />
                 <span>ATMOSPHERIC HITS</span>
-                <strong className="visit-count-num">{totalVisits ? totalVisits.toLocaleString() : '...'}</strong>
+                <strong className="visit-count-num">{totalVisits ? totalVisits.toLocaleString() : '1'}</strong>
               </div>
 
               <div className="live-pill">
