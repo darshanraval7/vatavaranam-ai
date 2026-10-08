@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Sun, Cloud, CloudRain, Wind, Droplets, Thermometer, CloudLightning, CloudSnow, Disc, Radio, Compass, Gauge, Eye, Sunrise, Sunset, Calendar, Briefcase, ArrowLeftRight, Trophy, Moon, Sparkles } from 'lucide-react';
+import { Search, Sun, Cloud, CloudRain, Wind, Droplets, Thermometer, CloudLightning, CloudSnow, Disc, Radio, Compass, Gauge, Eye, Sunrise, Sunset, Calendar, Briefcase, ArrowLeftRight, Trophy, Moon, Sparkles, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import * as SunCalc from 'suncalc';
 import './App.css';
 import { incrementVisitCount } from './services/counterService';
@@ -16,6 +16,10 @@ function App() {
   ]);
   const [chatLoading, setChatLoading] = useState(false);
   const [totalVisits, setTotalVisits] = useState(0);
+
+  // Web Speech DJ & Voice Search Hooks
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
 
   useEffect(() => {
     // App open hote hi Count +1
@@ -107,7 +111,124 @@ function App() {
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   };
 
+  // 🎙️ Studio DJ Radio Broadcast Generator (Zero Cloud Voice Costs)
+  const generateDJScript = (data) => {
+    if (!data) return "Welcome to Vatavaranam AI Studio. Please search a location to tune into the atmosphere.";
+    const hour = new Date().getHours();
+    let greeting = "Good morning";
+    if (hour >= 12 && hour < 17) greeting = "Good afternoon";
+    else if (hour >= 17 && hour < 22) greeting = "Good evening";
+    else if (hour >= 22 || hour < 5) greeting = "Late night atmospheric broadcast";
+
+    const cityName = data.name || "your studio";
+    const temp = Math.round(data.main.temp);
+    const feelsLike = Math.round(data.main.feels_like);
+    const condition = data.weather[0]?.description || "clear atmosphere";
+    const wind = Math.round(data.wind?.speed || 0);
+    const humidity = data.main?.humidity || 50;
+
+    let celestialDrop = "";
+    if (data.astro?.eveningGoldenHour) {
+      celestialDrop = `Optimal golden hour window is tuned between ${data.astro.eveningGoldenHour}. `;
+    }
+    if (data.astro?.moonName) {
+      celestialDrop += `Current lunar frequency is in ${data.astro.moonName} at ${data.astro.moonIllumination} surface illumination. `;
+    }
+
+    return `${greeting}, ${cityName}! You are tuned into Vatavaranam AI Studio. The current atmospheric frequency is ${temp} degrees Celsius, feeling like ${feelsLike} degrees under ${condition}. Gentle winds are tracking at ${wind} meters per second, with humidity holding at ${humidity} percent. ${celestialDrop}Balance your monitors, enjoy today's atmospheric track, and keep the vibes smooth.`;
+  };
+
+  const toggleWeatherBroadcast = () => {
+    if (!('speechSynthesis' in window)) {
+      alert("Browser Speech Synthesis is not supported in this browser. Please use Chrome, Edge, or Safari.");
+      return;
+    }
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const script = generateDJScript(weatherData);
+    const utterance = new SpeechSynthesisUtterance(script);
+
+    // Pick best mellow natural voice
+    const voices = window.speechSynthesis.getVoices();
+    const naturalVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('David') || v.name.includes('Samantha') || v.name.includes('US') || v.name.includes('UK'))) || voices.find(v => v.lang.startsWith('en'));
+    if (naturalVoice) utterance.voice = naturalVoice;
+
+    utterance.rate = 0.95; // chill, mellow studio DJ cadence
+    utterance.pitch = 0.98;
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // 🎤 Browser-Native Voice Search (Web Speech Recognition)
+  const toggleVoiceSearch = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice search is not supported by your current browser. Please try in Google Chrome, Microsoft Edge, or Safari.");
+      return;
+    }
+
+    if (isListening) return;
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => setIsListening(true);
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        // Strip common query preambles: "check Tokyo weather" -> "Tokyo"
+        const cleanCity = transcript
+          .replace(/^(check|what is the|what's the|show me|tell me|get|find)\s+/i, '')
+          .replace(/\s+weather.*$/i, '')
+          .replace(/^weather\s+(in|of|for)\s+/i, '')
+          .replace(/^(in|for|at)\s+/i, '')
+          .replace(/[.?]/g, '')
+          .trim();
+
+        if (cleanCity) {
+          setCity(cleanCity);
+          fetchWeather(cleanCity);
+        }
+        setIsListening(false);
+      };
+
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+
+      recognition.start();
+    } catch (e) {
+      console.warn("Speech recognition error:", e);
+      setIsListening(false);
+    }
+  };
+
+  // Speech cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
   const fetchWeather = async (searchCity) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
     setLoading(true);
     try {
 
@@ -565,14 +686,49 @@ function App() {
             </div>
             
             <form onSubmit={handleSearch} className="nav-center-search">
-              <input type="text" placeholder="Search city or Pincode..." value={city} onChange={(e) => setCity(e.target.value)} />
-              {/* લોકેશન ટ્રેક કરવા માટેનું નવું GPS બટન */}
-              <button type="button" onClick={fetchWeatherByGPS} style={{ paddingRight: '10px' }}>📍</button>
+              <input 
+                type="text" 
+                placeholder={isListening ? "Listening... Speak city name..." : "Search city or Pincode..."} 
+                value={city} 
+                onChange={(e) => setCity(e.target.value)} 
+              />
+              {/* 🎤 Voice Search Button */}
+              <button 
+                type="button" 
+                onClick={toggleVoiceSearch} 
+                className={`voice-mic-btn ${isListening ? 'listening-active' : ''}`}
+                title={isListening ? "Listening... Click to stop" : "Voice Search (Click and say: e.g. 'Check Tokyo weather')"}
+              >
+                {isListening ? <MicOff size={14} className="text-red" /> : <Mic size={14} />}
+              </button>
+
+              {/* GPS Button */}
+              <button type="button" onClick={fetchWeatherByGPS} title="Use current GPS location" style={{ paddingRight: '8px' }}>📍</button>
               
-              <button type="submit"><Search size={14} /></button>
+              <button type="submit" title="Search"><Search size={14} /></button>
             </form>
 
             <div className="nav-right-status">
+              {/* 📻 Studio DJ Weather Broadcast Pill */}
+              <button 
+                type="button" 
+                onClick={toggleWeatherBroadcast}
+                className={`live-pill dj-broadcast-pill ${isSpeaking ? 'broadcasting-active' : ''}`}
+                title={isSpeaking ? "Click to stop broadcast" : "Listen to Studio DJ Radio Broadcast"}
+              >
+                {isSpeaking ? (
+                  <>
+                    <VolumeX size={12} className="broadcast-pulsar" />
+                    <span className="dj-btn-text">STOP DJ</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 size={12} className="text-cyan pulse-heartbeat" />
+                    <span className="dj-btn-text">📻 BROADCAST DJ</span>
+                  </>
+                )}
+              </button>
+
               {/* Weather & Studio Themed Visits Counter Badge */}
               <div className="live-pill visit-pill">
                 <Cloud size={12} className="cloud-vibe-icon" />
@@ -596,7 +752,18 @@ function App() {
                   {getWeatherIcon(weatherData.weather[0].main, 64)}
                 </div>
                 <div className="track-metadata">
-                  <span className="now-playing-tag">NOW REPLAYING</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span className="now-playing-tag">NOW REPLAYING</span>
+                    <button 
+                      type="button"
+                      onClick={toggleWeatherBroadcast}
+                      className={`mini-dj-banner-btn ${isSpeaking ? 'speaking' : ''}`}
+                      title="Listen to Studio DJ Voice"
+                    >
+                      {isSpeaking ? <VolumeX size={10} /> : <Volume2 size={10} />}
+                      <span>{isSpeaking ? 'ON AIR' : 'DJ VOICE'}</span>
+                    </button>
+                  </div>
                   <h1 className="track-title">{weatherData.name}</h1>
                   <p className="track-subtitle">{weatherData.weather[0].description.toUpperCase()}</p>
                 </div>

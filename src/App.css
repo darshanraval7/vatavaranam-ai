@@ -73,6 +73,91 @@ body {
 .nav-center-search button { background: transparent; border: none; color: #94a3b8; padding-right: 18px; cursor: pointer; }
 .live-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; color: #0891b2; background: rgba(6, 182, 212, 0.06); padding: 6px 12px; border-radius: 30px; }
 
+/* 🎤 Voice Search Mic Button */
+.voice-mic-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  padding: 0 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.voice-mic-btn:hover {
+  color: #0891b2;
+}
+.voice-mic-btn.listening-active {
+  color: #ef4444 !important;
+  animation: micPulseGlow 0.8s ease-in-out infinite alternate;
+}
+@keyframes micPulseGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.4)); }
+  100% { transform: scale(1.25); filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.9)); }
+}
+
+/* 📻 DJ Radio Broadcast Button */
+.dj-broadcast-pill {
+  border: 1px solid rgba(8, 145, 178, 0.25);
+  background: rgba(8, 145, 178, 0.08);
+  color: #0891b2;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  font-weight: 700;
+}
+.dj-broadcast-pill:hover {
+  background: rgba(8, 145, 178, 0.16);
+  transform: translateY(-1px);
+}
+.dj-broadcast-pill.broadcasting-active {
+  background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+  color: #ffffff !important;
+  border-color: #0891b2 !important;
+  box-shadow: 0 4px 15px rgba(6, 182, 212, 0.35);
+  animation: djBroadcastPulse 1.2s infinite alternate;
+}
+@keyframes djBroadcastPulse {
+  0% { box-shadow: 0 0 4px rgba(6, 182, 212, 0.3); }
+  100% { box-shadow: 0 0 16px rgba(6, 182, 212, 0.7); }
+}
+
+/* 🎙️ Mini DJ Voice Banner Button */
+.mini-dj-banner-btn {
+  background: rgba(8, 145, 178, 0.08);
+  border: 1px solid rgba(8, 145, 178, 0.25);
+  color: #0891b2;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+.mini-dj-banner-btn:hover {
+  background: #0891b2;
+  color: #ffffff;
+}
+.mini-dj-banner-btn.speaking {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+  animation: miniDjPulse 0.9s infinite alternate;
+}
+@keyframes miniDjPulse {
+  0% { opacity: 0.85; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.08); }
+}
+
 /* ================= PERFECT HUB GRID ENGINE (FIXED STACK) ================= */
 .widescreen-workspace-grid { 
   display: grid; 
