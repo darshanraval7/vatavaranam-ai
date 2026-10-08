@@ -1,50 +1,27 @@
 import { supabase } from './supabaseClient';
 
 const STATS_ID = 'total_visits';
-const LOCAL_STORAGE_KEY = 'vatavaranam_ai_visit_hits';
-const BASE_FALLBACK_COUNT = 148; // Base starter count if DB is not yet connected
 
-// Local storage fallback helper
-const getLocalFallback = () => {
-  try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    const count = saved ? parseInt(saved, 10) : BASE_FALLBACK_COUNT;
-    const nextCount = (isNaN(count) ? BASE_FALLBACK_COUNT : count) + 1;
-    localStorage.setItem(LOCAL_STORAGE_KEY, nextCount.toString());
-    return nextCount;
-  } catch {
-    return BASE_FALLBACK_COUNT + 1;
-  }
-};
-
-const getLocalFallbackWithoutIncrement = () => {
-  try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    const count = saved ? parseInt(saved, 10) : BASE_FALLBACK_COUNT;
-    return isNaN(count) ? BASE_FALLBACK_COUNT : count;
-  } catch {
-    return BASE_FALLBACK_COUNT;
-  }
-};
-
-// 1. Website khule tyare visit count +1 karva mate
+// 1. Website khule tyare Supabase Central DB ma Live Count +1 karva mate
 export const incrementVisitCount = async () => {
-  // Jo Supabase configure na hoy to local storage fallback વાપરો
   if (!supabase) {
-    return getLocalFallback();
+    console.warn("Supabase credentials missing in .env! Please add REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_ANON_KEY.");
+    return null;
   }
 
   try {
-    // A. Pehla atomic RPC function try karo
+    // A. Pehla atomic RPC function try karo (Supabase best practice)
     const { data: rpcCount, error: rpcError } = await supabase.rpc('increment_visit_count');
     
     if (!rpcError && rpcCount !== null && rpcCount !== undefined) {
-      const numericCount = Number(rpcCount);
-      localStorage.setItem(LOCAL_STORAGE_KEY, numericCount.toString());
-      return numericCount;
+      return Number(rpcCount);
     }
 
-    // B. Jo RPC function na hoy to direct table upsert/update try karo
+    if (rpcError) {
+      console.warn("RPC not found or error, trying direct table update:", rpcError.message);
+    }
+
+    // B. Direct table select & update (Fallback jo RPC create na karyu hoy)
     const { data: existingData, error: fetchError } = await supabase
       .from('site_stats')
       .select('count')
@@ -53,36 +30,40 @@ export const incrementVisitCount = async () => {
 
     if (!fetchError && existingData) {
       const newCount = (existingData.count || 0) + 1;
-      await supabase
+      const { error: updateError } = await supabase
         .from('site_stats')
         .update({ count: newCount, updated_at: new Date().toISOString() })
         .eq('id', STATS_ID);
 
-      localStorage.setItem(LOCAL_STORAGE_KEY, newCount.toString());
+      if (updateError) {
+        console.error("Supabase update error:", updateError);
+        return existingData.count;
+      }
       return newCount;
     } else if (!fetchError && !existingData) {
       const initialCount = 1;
-      await supabase
+      const { error: insertError } = await supabase
         .from('site_stats')
         .insert([{ id: STATS_ID, count: initialCount, updated_at: new Date().toISOString() }]);
 
-      localStorage.setItem(LOCAL_STORAGE_KEY, initialCount.toString());
+      if (insertError) {
+        console.error("Supabase insert error:", insertError);
+        return null;
+      }
       return initialCount;
+    } else {
+      console.error("Supabase fetch error:", fetchError);
+      return null;
     }
-
-    // Jo Supabase table na male to fallback
-    return getLocalFallback();
   } catch (err) {
-    console.warn("Supabase Counter Fallback:", err);
-    return getLocalFallback();
+    console.error("Supabase Counter Error:", err);
+    return null;
   }
 };
 
 // 2. Total count GET karva mate (Count vadhya vagar)
 export const getVisitCount = async () => {
-  if (!supabase) {
-    return getLocalFallbackWithoutIncrement();
-  }
+  if (!supabase) return null;
 
   try {
     const { data, error } = await supabase
@@ -91,12 +72,10 @@ export const getVisitCount = async () => {
       .eq('id', STATS_ID)
       .maybeSingle();
 
-    if (error || !data) {
-      return getLocalFallbackWithoutIncrement();
-    }
-
-    return data.count;
+    if (error || !data) return null;
+    return Number(data.count);
   } catch (err) {
-    return getLocalFallbackWithoutIncrement();
+    console.error("Supabase Get Error:", err);
+    return null;
   }
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Sun, Cloud, CloudRain, Wind, Droplets, Thermometer, CloudLightning, CloudSnow, Disc, Radio, Compass, Gauge, Eye, Sunrise, Sunset, Calendar, Briefcase, ArrowLeftRight, Trophy } from 'lucide-react';
+import { Search, Sun, Cloud, CloudRain, Wind, Droplets, Thermometer, CloudLightning, CloudSnow, Disc, Radio, Compass, Gauge, Eye, Sunrise, Sunset, Calendar, Briefcase, ArrowLeftRight, Trophy, Moon, Sparkles } from 'lucide-react';
+import * as SunCalc from 'suncalc';
 import './App.css';
 import { incrementVisitCount } from './services/counterService';
 
@@ -14,14 +15,7 @@ function App() {
     { role: 'bot', text: 'Yo! I am your Atmospheric AI Assistant. Ask me anything about today\'s studio environment or event planning.' }
   ]);
   const [chatLoading, setChatLoading] = useState(false);
-  const [totalVisits, setTotalVisits] = useState(() => {
-    try {
-      const saved = localStorage.getItem('vatavaranam_ai_visit_hits');
-      return saved ? parseInt(saved, 10) : 149;
-    } catch {
-      return 149;
-    }
-  });
+  const [totalVisits, setTotalVisits] = useState(0);
 
   useEffect(() => {
     // App open hote hi Count +1
@@ -353,34 +347,78 @@ function App() {
   };
 
   const calculateAstronomyData = (data) => {
-    if (!data || !data.sys) return null;
+    if (!data) return null;
 
-    const sunriseTS = data.sys.sunrise;
-    const sunsetTS = data.sys.sunset;
+    const lat = data.coord?.lat || 0;
+    const lon = data.coord?.lon || 0;
+    const now = new Date();
 
-    // ૧. Day Length (કુલ દિવસ કેટલો લાંબો છે)
-    const totalSeconds = sunsetTS - sunriseTS;
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const dayLength = `${hours}h ${minutes}m`;
+    // 1. Exact Celestial Times via SunCalc (Zero API Calls)
+    const sunTimes = SunCalc.getTimes(now, lat, lon);
+    const moonIllum = SunCalc.getMoonIllumination(now);
+    const moonTimes = SunCalc.getMoonTimes(now, lat, lon);
 
-    // ૨. Solar Noon (મધ્યહ્ન - જ્યારે સૂર્ય બરાબર મધ્યમાં હોય)
-    const solarNoonTS = sunriseTS + (totalSeconds / 2);
-    const solarNoon = new Date(solarNoonTS * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-    // ૩. Golden Hour & Blue Hour (સિનેમેટિક શૂટ માટે મોસ્ટ ઈમ્પોર્ટન્ટ)
-    // સૂર્યોદય પછીની અને સૂર્યાસ્ત પહેલાની ૪0 મિનિટ
-    const formatTimeOffset = (timestamp, offsetMinutes) => {
-      return new Date((timestamp + (offsetMinutes * 60)) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const formatTimeOnly = (dateObj) => {
+      if (!dateObj || isNaN(new Date(dateObj).getTime())) return '--:--';
+      return new Date(dateObj).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     };
 
-    const morningGoldenHour = `${formatTimeOffset(sunriseTS, 0)} - ${formatTimeOffset(sunriseTS, 45)}`;
-    const eveningGoldenHour = `${formatTimeOffset(sunsetTS, -45)} - ${formatTimeOffset(sunsetTS, 0)}`;
-    const eveningBlueHour = `${formatTimeOffset(sunsetTS, 0)} - ${formatTimeOffset(sunsetTS, 30)}`;
+    // 2. Day Length Spectrum
+    let dayLength = '--:--';
+    const sunriseDate = sunTimes.sunrise || (data.sys?.sunrise ? new Date(data.sys.sunrise * 1000) : null);
+    const sunsetDate = sunTimes.sunset || (data.sys?.sunset ? new Date(data.sys.sunset * 1000) : null);
 
-    // ૪. Moonrise/Moonset (ફ્રી API ટ્રીક: સૂર્યાસ્ત અને સૂર્યોદયના અંદાજિત ઓફસેટ પરથી લોફાઇ ટ્રેકિંગ)
-    const moonrise = new Date((sunsetTS + 3600) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    const moonset = new Date((sunriseTS + 7200) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    if (sunriseDate && sunsetDate) {
+      const totalSeconds = Math.max(0, Math.floor((sunsetDate - sunriseDate) / 1000));
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      dayLength = `${hours}h ${minutes}m`;
+    }
+
+    // 3. Solar Noon & Cinematic Windows
+    const solarNoon = formatTimeOnly(sunTimes.solarNoon);
+    const morningGoldenHour = `${formatTimeOnly(sunTimes.sunrise)} - ${formatTimeOnly(sunTimes.goldenHourEnd)}`;
+    const eveningGoldenHour = `${formatTimeOnly(sunTimes.goldenHour)} - ${formatTimeOnly(sunTimes.sunset)}`;
+    const eveningBlueHour = `${formatTimeOnly(sunTimes.sunset)} - ${formatTimeOnly(sunTimes.dusk)}`;
+    const dawn = formatTimeOnly(sunTimes.dawn);
+    const dusk = formatTimeOnly(sunTimes.dusk);
+
+    // 4. Moon Phase & Illumination Analysis
+    const phaseVal = moonIllum.phase;
+    const fractionPct = Math.round(moonIllum.fraction * 100);
+
+    let moonName = 'New Moon';
+    let moonEmoji = '🌑';
+
+    if (phaseVal < 0.03 || phaseVal > 0.97) {
+      moonName = 'New Moon';
+      moonEmoji = '🌑';
+    } else if (phaseVal < 0.22) {
+      moonName = 'Waxing Crescent';
+      moonEmoji = '🌒';
+    } else if (phaseVal <= 0.28) {
+      moonName = 'First Quarter';
+      moonEmoji = '🌓';
+    } else if (phaseVal < 0.47) {
+      moonName = 'Waxing Gibbous';
+      moonEmoji = '🌔';
+    } else if (phaseVal <= 0.53) {
+      moonName = 'Full Moon';
+      moonEmoji = '🌕';
+    } else if (phaseVal < 0.72) {
+      moonName = 'Waning Gibbous';
+      moonEmoji = '🌖';
+    } else if (phaseVal <= 0.78) {
+      moonName = 'Last Quarter';
+      moonEmoji = '🌗';
+    } else {
+      moonName = 'Waning Crescent';
+      moonEmoji = '🌘';
+    }
+
+    // 5. Moonrise & Moonset
+    const moonrise = formatTimeOnly(moonTimes.rise);
+    const moonset = formatTimeOnly(moonTimes.set);
 
     return {
       dayLength,
@@ -388,8 +426,15 @@ function App() {
       morningGoldenHour,
       eveningGoldenHour,
       eveningBlueHour,
+      dawn,
+      dusk,
+      moonName,
+      moonEmoji,
+      moonIllumination: `${fractionPct}%`,
+      moonFraction: fractionPct,
       moonrise,
-      moonset
+      moonset,
+      isEngineActive: true
     };
   };
 
@@ -638,36 +683,84 @@ function App() {
               </div>
             </div>
 
-            {/* BOTTOM FULL-WIDTH MODULE: AI CELESTIAL TRACKER */}
-                <div className="astro-matrix-card">
-                  <h4 className="astro-matrix-title">🌎 AI CELESTIAL & ASTRONOMY TRACK</h4>
-                  <div className="astro-matrix-grid">
-                    <div className="astro-node">
-                      <span className="astro-label">DAY LENGTH SPECTRUM</span>
-                      <h3>{weatherData.astro?.dayLength || '--:--'}</h3>
-                    </div>
-                    <div className="astro-node">
-                      <span className="astro-label">SOLAR NOON TIMELINE</span>
-                      <h3>{weatherData.astro?.solarNoon || '--:--'}</h3>
-                    </div>
-                    <div className="astro-node">
-                      <span className="astro-label">🌅 MORNING GOLDEN HOUR</span>
-                      <h3 className="text-amber">{weatherData.astro?.morningGoldenHour || '--:--'}</h3>
-                    </div>
-                    <div className="astro-node">
-                      <span className="astro-label">🌇 EVENING GOLDEN HOUR</span>
-                      <h3 className="text-amber">{weatherData.astro?.eveningGoldenHour || '--:--'}</h3>
-                    </div>
-                    <div className="astro-node">
-                      <span className="astro-label">🌌 CINEMATIC BLUE HOUR</span>
-                      <h3 className="text-blue">{weatherData.astro?.eveningBlueHour || '--:--'}</h3>
-                    </div>
-                    <div className="astro-node">
-                      <span className="astro-label">🌙 ESTIMATED MOONRISE / SET</span>
-                      <h3>{weatherData.astro?.moonrise || '--:--'} / {weatherData.astro?.moonset || '--:--'}</h3>
+            {/* BOTTOM FULL-WIDTH MODULE: AI CELESTIAL TRACKER POWERED BY SUNCALC */}
+            <div className="astro-matrix-card">
+              <div className="astro-header-flex">
+                <div className="astro-title-group">
+                  <h4 className="astro-matrix-title">🌙 CELESTIAL & LUNAR MATRIX</h4>
+                  <span className="astro-engine-badge">
+                    <Sparkles size={11} style={{ display: 'inline', marginRight: '4px' }} />
+                    SUNCALC ENGINE • 0 API CALLS
+                  </span>
+                </div>
+                {weatherData.astro?.moonName && (
+                  <div className="astro-live-pill">
+                    <Moon size={12} className="text-purple" />
+                    <span>{weatherData.astro.moonName.toUpperCase()}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* MOON HERO CARD */}
+              <div className="moon-phase-hero-card">
+                <div className="moon-visual-col">
+                  <span className="moon-emoji-art">{weatherData.astro?.moonEmoji || '🌑'}</span>
+                  <div className="moon-info-meta">
+                    <span className="moon-meta-label">CURRENT LUNAR PHASE</span>
+                    <h3 className="moon-phase-heading">{weatherData.astro?.moonName || 'Lunar Telemetry'}</h3>
+                    <p className="moon-illum-text">
+                      <strong>{weatherData.astro?.moonIllumination || '0%'}</strong> surface illuminated
+                    </p>
+                    <div className="moon-progress-track">
+                      <div 
+                        className="moon-progress-fill" 
+                        style={{ width: `${weatherData.astro?.moonFraction || 0}%` }}
+                      ></div>
                     </div>
                   </div>
                 </div>
+
+                <div className="moon-rise-set-col">
+                  <div className="lunar-timing-node">
+                    <span className="lunar-time-label">🌘 MOONRISE</span>
+                    <h4 className="lunar-time-val">{weatherData.astro?.moonrise || '--:--'}</h4>
+                  </div>
+                  <div className="lunar-timing-divider"></div>
+                  <div className="lunar-timing-node">
+                    <span className="lunar-time-label">🌘 MOONSET</span>
+                    <h4 className="lunar-time-val">{weatherData.astro?.moonset || '--:--'}</h4>
+                  </div>
+                </div>
+              </div>
+
+              {/* CELESTIAL TIMINGS GRID */}
+              <div className="astro-matrix-grid">
+                <div className="astro-node">
+                  <span className="astro-label">DAY LENGTH SPECTRUM</span>
+                  <h3>{weatherData.astro?.dayLength || '--:--'}</h3>
+                </div>
+                <div className="astro-node">
+                  <span className="astro-label">SOLAR NOON TIMELINE</span>
+                  <h3>{weatherData.astro?.solarNoon || '--:--'}</h3>
+                </div>
+                <div className="astro-node">
+                  <span className="astro-label">🌅 MORNING GOLDEN HOUR</span>
+                  <h3 className="text-amber">{weatherData.astro?.morningGoldenHour || '--:--'}</h3>
+                </div>
+                <div className="astro-node">
+                  <span className="astro-label">🌇 EVENING GOLDEN HOUR</span>
+                  <h3 className="text-amber">{weatherData.astro?.eveningGoldenHour || '--:--'}</h3>
+                </div>
+                <div className="astro-node">
+                  <span className="astro-label">🌌 CINEMATIC BLUE HOUR</span>
+                  <h3 className="text-blue">{weatherData.astro?.eveningBlueHour || '--:--'}</h3>
+                </div>
+                <div className="astro-node">
+                  <span className="astro-label">✨ DAWN & DUSK (TWILIGHT)</span>
+                  <h3>{weatherData.astro?.dawn || '--:--'} / {weatherData.astro?.dusk || '--:--'}</h3>
+                </div>
+              </div>
+            </div>
 
             {/* BOTTOM FULL-WIDTH MODULE 2: AI ATMOSPHERIC NOISE & AQI */}
             {weatherData?.aqiData && (
