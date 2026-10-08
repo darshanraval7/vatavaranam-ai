@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Sun, Cloud, CloudRain, Wind, Droplets, Thermometer, CloudLightning, CloudSnow, Disc, Radio, Compass, Gauge, Eye, Sunrise, Sunset, Calendar, Briefcase, ArrowLeftRight, Trophy, Moon, Sparkles, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { Search, Sun, Cloud, CloudRain, Wind, Droplets, Thermometer, CloudLightning, CloudSnow, Disc, Radio, Compass, Gauge, Eye, Sunrise, Sunset, Calendar, Briefcase, ArrowLeftRight, Trophy, Moon, Sparkles, Mic, MicOff, Volume2, VolumeX, Share2, Download, X } from 'lucide-react';
 import * as SunCalc from 'suncalc';
 import './App.css';
 import { incrementVisitCount } from './services/counterService';
@@ -20,6 +20,11 @@ function App() {
   // Web Speech DJ & Voice Search Hooks
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
+
+  // 📼 Exportable Studio Card Hooks
+  const [cardModalOpen, setCardModalOpen] = useState(false);
+  const [generatedCardUrl, setGeneratedCardUrl] = useState(null);
+  const [isGeneratingCard, setIsGeneratingCard] = useState(false);
 
   useEffect(() => {
     // App open hote hi Count +1
@@ -215,14 +220,290 @@ function App() {
     }
   };
 
-  // Speech cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
+  // 📼 HTML5 Canvas Retro Cassette & Vinyl Studio Card Engine
+  const generateStudioCard = () => {
+    if (!weatherData) return;
+    setIsGeneratingCard(true);
+
+    // Canvas size: 800 x 1000 (Ideal 4:5 vertical portrait for Instagram Story / WhatsApp Status)
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 1000;
+    const ctx = canvas.getContext('2d');
+
+    // 1. Deep studio lo-fi background gradient
+    const bgGrad = ctx.createLinearGradient(0, 0, 800, 1000);
+    const mainCond = weatherData.weather[0]?.main || 'Clear';
+    if (['Rain', 'Drizzle', 'Thunderstorm'].includes(mainCond)) {
+      bgGrad.addColorStop(0, '#0a192f');
+      bgGrad.addColorStop(0.5, '#0f2744');
+      bgGrad.addColorStop(1, '#061325');
+    } else if (mainCond === 'Clouds') {
+      bgGrad.addColorStop(0, '#0f172a');
+      bgGrad.addColorStop(0.5, '#1e293b');
+      bgGrad.addColorStop(1, '#0f172a');
+    } else {
+      bgGrad.addColorStop(0, '#090d16');
+      bgGrad.addColorStop(0.5, '#171a33');
+      bgGrad.addColorStop(1, '#25133d');
+    }
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 800, 1000);
+
+    // Ambient radial glow orbs
+    const glow1 = ctx.createRadialGradient(200, 220, 10, 200, 220, 350);
+    glow1.addColorStop(0, 'rgba(6, 182, 212, 0.28)');
+    glow1.addColorStop(1, 'rgba(6, 182, 212, 0)');
+    ctx.fillStyle = glow1;
+    ctx.fillRect(0, 0, 800, 1000);
+
+    const glow2 = ctx.createRadialGradient(650, 750, 10, 650, 750, 380);
+    glow2.addColorStop(0, 'rgba(168, 85, 247, 0.25)');
+    glow2.addColorStop(1, 'rgba(168, 85, 247, 0)');
+    ctx.fillStyle = glow2;
+    ctx.fillRect(0, 0, 800, 1000);
+
+    // 2. Outer Studio Console Frame
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.lineWidth = 2;
+    if (ctx.roundRect) ctx.roundRect(40, 40, 720, 920, 24);
+    else ctx.rect(40, 40, 720, 920);
+    ctx.stroke();
+
+    // Top Header Brand Text
+    ctx.fillStyle = '#0891b2';
+    ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('VATAVARANAM.AI', 80, 95);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('ATMOSPHERIC LO-FI AUDIO CONSOLE', 80, 118);
+
+    // Top Right Metadata
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 13px monospace';
+    ctx.fillText('SIDE A • STEREO 44.1kHz', 720, 95);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '12px monospace';
+    const dateStr = new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+    ctx.fillText(dateStr.toUpperCase(), 720, 118);
+    ctx.textAlign = 'left';
+
+    // 3. RETRO CASSETTE TAPE BODY
+    const cX = 80;
+    const cY = 160;
+    const cW = 640;
+    const cH = 370;
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(cX, cY, cW, cH, 20);
+    else ctx.rect(cX, cY, cW, cH);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Cassette Sticker Label
+    const sX = cX + 40;
+    const sY = cY + 30;
+    const sW = cW - 80;
+    const sH = 210;
+    ctx.fillStyle = '#f8fafc';
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(sX, sY, sW, sH, 12);
+    else ctx.rect(sX, sY, sW, sH);
+    ctx.fill();
+
+    // Color tape header bar
+    ctx.fillStyle = '#0891b2';
+    ctx.fillRect(sX, sY, sW, 8);
+    ctx.fillStyle = '#a855f7';
+    ctx.fillRect(sX, sY + 8, sW, 4);
+
+    // City Name & Weather Title
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(weatherData.name, sX + 25, sY + 52);
+
+    ctx.fillStyle = '#0891b2';
+    ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(weatherData.weather[0]?.description.toUpperCase(), sX + 26, sY + 76);
+
+    // Center Spool Window
+    const wX = sX + 60;
+    const wY = sY + 95;
+    const wW = sW - 120;
+    const wH = 95;
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(wX, wY, wW, wH, 12);
+    else ctx.rect(wX, wY, wW, wH);
+    ctx.fill();
+
+    // Left & Right Spools
+    const sp1X = wX + 70;
+    const sp2X = wX + wW - 70;
+    const spY = wY + 48;
+
+    [sp1X, sp2X].forEach(px => {
+      ctx.beginPath();
+      ctx.arc(px, spY, 32, 0, Math.PI * 2);
+      ctx.fillStyle = '#334155';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(px, spY, 14, 0, Math.PI * 2);
+      ctx.fillStyle = '#0f172a';
+      ctx.fill();
+    });
+
+    // Center Transparent Tape Ribbon
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(sp1X + 35, spY - 16, (sp2X - sp1X) - 70, 32);
+
+    // Temperature in center
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 26px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${Math.round(weatherData.main.temp)}°C`, wX + (wW / 2), spY + 9);
+    ctx.textAlign = 'left';
+
+    // Cassette Bottom Inset
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.beginPath();
+    ctx.moveTo(cX + 120, cY + cH);
+    ctx.lineTo(cX + 150, cY + cH - 40);
+    ctx.lineTo(cX + cW - 150, cY + cH - 40);
+    ctx.lineTo(cX + cW - 120, cY + cH);
+    ctx.closePath();
+    ctx.fill();
+
+    // 4 Corner Screws
+    const screws = [
+      [cX + 20, cY + 20],
+      [cX + cW - 20, cY + 20],
+      [cX + 20, cY + cH - 20],
+      [cX + cW - 20, cY + cH - 20]
+    ];
+    ctx.fillStyle = '#475569';
+    screws.forEach(([sx, sy]) => {
+      ctx.beginPath();
+      ctx.arc(sx, sy, 5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // 4. EQUALIZER SPECTRUM BARS
+    const eqY = 575;
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('LIVE ATMOSPHERIC EQUALIZER', 80, eqY);
+
+    const barCount = 18;
+    const barWidth = 18;
+    const barGap = 18;
+    for (let i = 0; i < barCount; i++) {
+      const seed = Math.sin((i / barCount) * Math.PI) * 0.7 + Math.sin(i * 1.6) * 0.3;
+      const barH = Math.max(14, Math.min(65, (seed * 48) + (weatherData.main.humidity / 4) + 12));
+      const bx = 80 + i * (barWidth + barGap);
+      const by = eqY + 80 - barH;
+
+      const bGrad = ctx.createLinearGradient(0, by, 0, by + barH);
+      bGrad.addColorStop(0, '#06b6d4');
+      bGrad.addColorStop(1, '#a855f7');
+      ctx.fillStyle = bGrad;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(bx, by, barWidth, barH, 4);
+      else ctx.rect(bx, by, barWidth, barH);
+      ctx.fill();
+    }
+
+    // 5. FOUR STUDIO TELEMETRY CARDS
+    const gY = 685;
+    const metrics = [
+      { label: 'HUMIDITY FREQUENCY', val: `${weatherData.main.humidity}%`, icon: '💧' },
+      { label: 'WIND VELOCITY', val: `${weatherData.wind.speed} m/s`, icon: '💨' },
+      { label: 'BAROMETRIC NOISE', val: `${weatherData.main.pressure} hPa`, icon: '🧭' },
+      { label: 'LUNAR PHASE', val: weatherData.astro?.moonName || 'Waning Crescent', icon: weatherData.astro?.moonEmoji || '🌙' }
+    ];
+
+    metrics.forEach((m, idx) => {
+      const colX = (idx % 2 === 0) ? 80 : 420;
+      const rowY = gY + Math.floor(idx / 2) * 95;
+      const boxW = 300;
+      const boxH = 80;
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(colX, rowY, boxW, boxH, 14);
+      else ctx.rect(colX, rowY, boxW, boxH);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText(m.label, colX + 20, rowY + 28);
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 17px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText(`${m.icon} ${m.val}`, colX + 20, rowY + 58);
+    });
+
+    // 6. FOOTER SIGN-OFF
+    ctx.fillStyle = '#64748b';
+    ctx.font = '500 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('RECORDED & BROADCASTED ON VATAVARANAM.AI • LO-FI WEATHER SOUNDSTATION', 400, 930);
+
+    const dataUrl = canvas.toDataURL('image/png');
+    setGeneratedCardUrl(dataUrl);
+    setCardModalOpen(true);
+    setIsGeneratingCard(false);
+  };
+
+  // Download Card as PNG
+  const handleDownloadCard = () => {
+    if (!generatedCardUrl) return;
+    const link = document.createElement('a');
+    link.download = `Vatavaranam-${weatherData?.name || 'Studio'}-Weather-Tape.png`;
+    link.href = generatedCardUrl;
+    link.click();
+  };
+
+  // One-Click Share via Web Share API
+  const handleShareCard = async () => {
+    if (!generatedCardUrl) return;
+    try {
+      const res = await fetch(generatedCardUrl);
+      const blob = await res.blob();
+      const file = new File([blob], `Vatavaranam-${weatherData?.name || 'Weather'}-Tape.png`, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: `Vatavaranam.ai Weather Vibe - ${weatherData.name}`,
+          text: `Check out today's atmospheric lo-fi frequency in ${weatherData.name}: ${Math.round(weatherData.main.temp)}°C under ${weatherData.weather[0].description}! 📻✨`,
+          files: [file]
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          title: `Vatavaranam.ai Weather Vibe - ${weatherData.name}`,
+          text: `Today's atmospheric vibe in ${weatherData.name} is ${Math.round(weatherData.main.temp)}°C with ${weatherData.weather[0].description}. 📻`,
+          url: window.location.href
+        });
+      } else {
+        handleDownloadCard();
       }
-    };
-  }, []);
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.warn("Share fallback:", err);
+        handleDownloadCard();
+      }
+    }
+  };
 
   const fetchWeather = async (searchCity) => {
     if ('speechSynthesis' in window) {
@@ -729,6 +1010,18 @@ function App() {
                 )}
               </button>
 
+              {/* 📼 Studio Cassette Card Generator Button */}
+              <button 
+                type="button" 
+                onClick={generateStudioCard}
+                className="live-pill card-share-pill"
+                title="Generate and Share Lo-Fi Weather Cassette Card"
+                disabled={isGeneratingCard}
+              >
+                <Share2 size={12} className="text-purple" />
+                <span>{isGeneratingCard ? 'GENERATING...' : 'STUDIO CARD'}</span>
+              </button>
+
               {/* Weather & Studio Themed Visits Counter Badge */}
               <div className="live-pill visit-pill">
                 <Cloud size={12} className="cloud-vibe-icon" />
@@ -762,6 +1055,16 @@ function App() {
                     >
                       {isSpeaking ? <VolumeX size={10} /> : <Volume2 size={10} />}
                       <span>{isSpeaking ? 'ON AIR' : 'DJ VOICE'}</span>
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={generateStudioCard}
+                      className="mini-card-banner-btn"
+                      title="Generate Lo-Fi Weather Cassette Card"
+                      disabled={isGeneratingCard}
+                    >
+                      <Download size={10} />
+                      <span>CARD</span>
                     </button>
                   </div>
                   <h1 className="track-title">{weatherData.name}</h1>
@@ -1155,6 +1458,55 @@ function App() {
             <button className={`footer-tab-btn ${activeTab === 'aichat' ? 'active' : ''}`} onClick={() => setActiveTab('aichat')}><Radio className="pulse-heartbeat" size={14} /> Vatavaranam AI Chat</button>
           </footer>
 
+        </div>
+      )}
+
+      {/* 📼 CASSETTE & VINYL STUDIO CARD PREVIEW MODAL */}
+      {cardModalOpen && generatedCardUrl && (
+        <div className="card-modal-backdrop" onClick={() => setCardModalOpen(false)}>
+          <div className="card-modal-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="card-modal-header">
+              <div className="card-modal-title-group">
+                <h3>📼 LO-FI WEATHER CASSETTE CARD</h3>
+                <span className="card-modal-subtitle">Direct export for Instagram Stories & WhatsApp</span>
+              </div>
+              <button 
+                type="button" 
+                className="card-modal-close-btn" 
+                onClick={() => setCardModalOpen(false)}
+                title="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="card-modal-preview-box">
+              <img 
+                src={generatedCardUrl} 
+                alt="Vatavaranam Studio Cassette Card" 
+                className="card-preview-img"
+              />
+            </div>
+
+            <div className="card-modal-actions-row">
+              <button 
+                type="button" 
+                onClick={handleDownloadCard} 
+                className="card-action-btn download-btn"
+              >
+                <Download size={15} />
+                <span>DOWNLOAD PNG</span>
+              </button>
+              <button 
+                type="button" 
+                onClick={handleShareCard} 
+                className="card-action-btn share-btn"
+              >
+                <Share2 size={15} />
+                <span>SHARE CARD</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
